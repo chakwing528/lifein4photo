@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的專屬人生四格 | My Life4Cuts</title>
+    <style>
+        /* --- 網站基本樣式 --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 { color: #4a4a4a; margin-bottom: 10px; }
+        p.subtitle { color: #666; margin-bottom: 25px; }
+
+        /* --- 控制區與按鈕樣式 --- */
+        .controls-section {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .format-group { margin-bottom: 15px; }
+        .btn {
+            padding: 10px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+            color: #333;
+            border: 2px solid transparent;
+            border-radius: 25px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { background-color: #d0d0d0; transform: translateY(-2px); }
+        /* 選中狀態的按鈕 */
+        .btn.active {
+            background-color: #ff7eb3;
+            color: white;
+            box-shadow: 0 4px 10px rgba(255, 126, 179, 0.4);
+        }
+        .btn-primary {
+            background-color: #ff7eb3;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 12px 30px;
+        }
+        .btn-primary:hover { background-color: #ff65a3; box-shadow: 0 4px 12px rgba(255, 101, 163, 0.5); }
+
+        /* --- 相機預覽區 --- */
+        #camera-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            background: #000;
+        }
+        /* 鏡像翻轉視訊，讓自拍較自然 */
+        video { 
+            width: 100%; /* RWD 設定 */
+            max-width: 600px; 
+            height: auto; 
+            display: block;
+            transform: scaleX(-1); 
+        }
+        
+        /* --- 倒數計時器 --- */
+        #countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            color: white;
+            font-weight: 800;
+            text-shadow: 4px 4px 10px rgba(0,0,0,0.7);
+            display: none; /* 預設隱藏 */
+            pointer-events: none;
+        }
+
+        /* --- 結果顯示區 --- */
+        #result-container {
+            display: none; /* 預設隱藏，拍完顯示 */
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #ccc;
+        }
+        /* 最終合成的 Canvas */
+        canvas {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            max-width: 90%; /* 在手機上不會超出螢幕 */
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .action-buttons {
+            margin-top: 15px;
+        }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        /* --- 列印專用樣式 (重要!) --- */
+        /* 當使用者按下「列印」時，隱藏網頁所有元素，只顯示那張照片 */
+        @media print {
+            body * { visibility: hidden; }
+            #result-container, #result-container * { visibility: visible; }
+            #result-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                border: none;
+                text-align: center;
+            }
+            /* 強制 Canvas 在列印時維持高品質並適應頁面 */
+            canvas {
+                max-width: 100%;
+                max-height: 100vh;
+                box-shadow: none;
+                width: auto; /* 讓瀏覽器決定最佳列印寬度 */
+            }
+            .action-buttons, h3 { display: none; } /* 列印時不顯示按鈕和標題 */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📸 我的專屬人生四格</h1>
+    <p class="subtitle">選擇尺寸，準備好你的笑容！(需允許相機權限)</p>
+
+    <div class="controls-section">
+        <div class="format-group">
+            <p style="margin: 5px 0; font-weight: bold;">選擇列印尺寸：</p>
+            <button id="btn-2x6" class="btn active" onclick="setFormat('2x6')">2x6 英吋 (經典長條)</button>
+            <button id="btn-4x6" class="btn" onclick="setFormat('4x6')">4x6 英吋 (兩條並排)</button>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="startCapture()">✨ 開始拍攝 (連拍4張) ✨</button>
+        </div>
+    </div>
+
+    <br>
+    <div id="camera-container">
+        <video id="video" autoplay playsinline></video>
+        <div id="countdown"></div>
+    </div>
+
+    <div id="result-container">
+        <h3>🎉 拍攝完成！預覽你的照片：</h3>
+        <canvas id="finalCanvas"></canvas>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="downloadImage()">📥 下載圖片</button>
+            <button class="btn btn-secondary" onclick="window.print()">🖨️ 列印照片</button>
+            <button class="btn" onclick="resetBooth()">🔄 重新拍攝</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 變數宣告 ---
+        const video = document.getElementById('video');
+        const finalCanvas = document.getElementById('finalCanvas');
+        const ctx = finalCanvas.getContext('2d');
+        const countdownEl = document.getElementById('countdown');
+        const resultContainer = document.getElementById('result-container');
+        const btn2x6 = document.getElementById('btn-2x6');
+        const btn4x6 = document.getElementById('btn-4x6');
+
+        let photos = []; // 儲存拍攝的 4 張照片 (canvas 元素)
+        let currentFormat = '2x6'; // 預設尺寸
+
+        // --- 1. 初始化：啟動相機 ---
+        // 請求 HD 解析度 (1280x720)，如果裝置不支援會自動降級
+        navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                width: { ideal: 1280 }, 
+                height: { ideal: 720 },
+                facingMode: "user" // 優先使用前鏡頭
+            } 
+        })
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error("相機錯誤:", err);
+            alert("無法開啟相機。請確保您已允許網站存取相機權限。\n(在 iOS 上請使用 Safari 瀏覽器)");
+        });
+
+        // --- 功能：切換尺寸 ---
+        function setFormat(format) {
+            currentFormat = format;
+            // 更新按鈕外觀
+            if (format === '2x6') {
+                btn2x6.classList.add('active');
+                btn4x6.classList.remove('active');
+            } else {
+                btn4x6.classList.add('active');
+                btn2x6.classList.remove('active');
+            }
+            console.log("目前尺寸設定為:", currentFormat);
+        }
+
+        // --- 功能：開始拍攝流程 ---
+        async function startCapture() {
+            photos = []; // 清空舊照片
+            resultContainer.style.display = 'none'; // 隱藏上次結果
+            // 滾動到相機位置
+            document.getElementById('camera-container').scrollIntoView({ behavior: 'smooth' });
+
+            // 執行 4 次拍攝循環
+            for (let i = 1; i <= 4; i++) {
+                await runCountdown(3); // 倒數 3 秒
+                capturePhoto(); // 拍照
+                // 閃光燈效果 (選用)
+                document.body.style.backgroundColor = 'white';
+                setTimeout(() => document.body.style.backgroundColor = '#f4f4f9', 100);
+            }
+
+            mergePhotos(); // 4張拍完後，進行合併
+        }
+
+        // --- 輔助功能：倒數計時 ---
+        function runCountdown(seconds) {
+            return new Promise(resolve => {
+                countdownEl.style.display = 'block';
+                let counter = seconds;
+                countdownEl.innerText = counter;
+                
+                const timer = setInterval(() => {
+                    counter--;
+                    if (counter > 0) {
+                        countdownEl.innerText = counter;
+                    } else {
+                        clearInterval(timer);
+                        countdownEl.style.display = 'none';
+                        resolve(); // 倒數結束，Promise 完成
+                    }
+                }, 1000);
+            });
+        }
+
+        // --- 功能：擷取單張照片 ---
+        function capturePhoto() {
+            // 建立一個暫時的 canvas 來抓取視訊當下的影格
+            const tempCanvas = document.createElement('canvas');
+            // 確保抓取到的解析度與視訊源一致
+            tempCanvas.width = video.videoWidth;
+            tempCanvas.height = video.videoHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // **關鍵：處理鏡像翻轉**
+            // 因為預覽畫面為了自然通常是鏡像的，我們希望存下來的照片也是鏡像的
+            tempCtx.translate(tempCanvas.width, 0);
+            tempCtx.scale(-1, 1);
+            
+            // 將視訊畫面畫到暫存 canvas 上
+            tempCtx.drawImage(video, 0, 0);
+            photos.push(tempCanvas); // 存入陣列
+            console.log("已拍攝照片:", photos.length);
+        }
+
+        // --- 核心功能：合併照片 (繪製人生四格) ---
+        function mergePhotos() {
+            // 設定參數 (以 300 DPI 為標準，確保列印清晰)
+            const photoWidth = 560;  // 單張照片寬度
+            const photoHeight = 420; // 單張照片高度 (4:3 比例)
+            const paddingX = 20; // 水平邊距
+            const paddingY = 20; // 垂直間距
+            const headerHeight = 60; // 頂部留白
+            const footerHeight = 100; // 底部留白 (放文字用)
+            
+            // 計算單一條(2x6)的總高度
+            const singleStripHeight = headerHeight + (photoHeight * 4) + (paddingY * 5) + footerHeight;
+            // 計算單一條(2x6)的總寬度
+            const singleStripWidth = photoWidth + (paddingX * 2);
+
+            let finalWidth, finalHeight;
+
+            if (currentFormat === '2x6') {
+                // --- 2x6 模式：單條垂直 ---
+                finalWidth = singleStripWidth;
+                finalHeight = singleStripHeight;
+            } else {
+                // --- 4x6 模式：兩條並排 ---
+                finalWidth = singleStripWidth * 2; // 寬度加倍
+                finalHeight = singleStripHeight;   // 高度不變
+            }
+
+            // 設定最終 Canvas 尺寸
+            finalCanvas.width = finalWidth;
+            finalCanvas.height = finalHeight;
+
+            // 1. 填滿背景色 (可以自己改顏色碼，例如淺粉紅 #ffe4e1)
+            ctx.fillStyle = "#ffffff"; 
+            ctx.fillRect(0, 0, finalWidth, finalHeight);
+
+            // 2. 定義繪製單條照片的函數
+            function drawStrip(startX) {
+                photos.forEach((photoCanvas, index) => {
+                    // 計算每張照片的 Y 座標
+                    const y = headerHeight + paddingY + (index * (photoHeight + paddingY));
+                    const x = startX + paddingX;
+
+                    // 繪製照片邊框陰影 (選用，增加立體感)
+                    ctx.fillStyle = "rgba(0,0,0,0.05)";
+                    ctx.fillRect(x + 5, y + 5, photoWidth, photoHeight);
+
+                    // 繪製照片 (會自動縮放以適應框框)
+                    // drawImage(來源, x, y, 寬, 高)
+                    ctx.drawImage(photoCanvas, x, y, photoWidth, photoHeight);
+                });
+
+                // 繪製底部文字
+                ctx.fillStyle = "#555";
+                ctx.font = "bold 24px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("MY LIFE4CUTS", startX + (singleStripWidth / 2), finalHeight - 55);
+                ctx.font = "18px Arial";
+                ctx.fillText(new Date().toLocaleDateString(), startX + (singleStripWidth / 2), finalHeight - 25);
+            }
+
+            // 3. 開始繪製
+            if (currentFormat === '2x6') {
+                drawStrip(0); // 畫一條，起始 X 為 0
+            } else {
+                // 4x6 模式：畫兩次
+                drawStrip(0); // 左邊那條
+                drawStrip(singleStripWidth); // 右邊那條 (起始 X 往右移)
+
+                // 畫中間的裁切虛線
+                ctx.beginPath();
+                ctx.setLineDash([15, 15]); // 虛線樣式
+                ctx.moveTo(singleStripWidth, 0);
+                ctx.lineTo(singleStripWidth, finalHeight);
+                ctx.strokeStyle = '#d0d0d0';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // 顯示結果區域
+            resultContainer.style.display = 'block';
+            // 平滑滾動到結果區
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- 功能：下載圖片 ---
+        function downloadImage() {
+            const link = document.createElement('a');
+            // 設定下載的檔名，包含時間戳記
+            link.download = `life4cuts-${currentFormat}-${Date.now()}.png`;
+            // 將 Canvas 轉為圖片 URL
+            link.href = finalCanvas.toDataURL('image/png', 1.0); // 使用最高品質
+            link.click();
+        }
+
+        // --- 功能：重新拍攝 ---
+        function resetBooth() {
+            resultContainer.style.display = 'none';
+            document.getElementById('camera-container').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
