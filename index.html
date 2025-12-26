@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>📸 人生四格 V.5</title>
+    <title>📸 人生四格 V.6</title>
     <style>
-        /* --- 🎨 V.5 樣式 --- */
+        /* --- 🎨 V.6 樣式 --- */
         :root {
             --primary: #ff8fab;
             --primary-dark: #fb6f92;
@@ -19,7 +19,7 @@
             color: #444; margin: 0; padding: 0;
             height: 100vh; overscroll-behavior: none; 
             user-select: none; -webkit-user-select: none;
-            overflow: hidden; /* 防止頁面滾動 */
+            overflow: hidden;
         }
 
         /* --- 全螢幕拍攝 --- */
@@ -49,7 +49,6 @@
 
         #editor-page { display: none; height: 100%; width: 100%; }
 
-        /* 電腦版：左右分欄 */
         @media (min-width: 768px) {
             #editor-page { flex-direction: row; }
             .editor-left {
@@ -65,15 +64,14 @@
             canvas { max-height: 90vh; max-width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         }
 
-        /* 手機版：上下分欄 */
         @media (max-width: 767px) {
             #editor-page { flex-direction: column-reverse; }
             .editor-left {
-                width: 100%; height: 45%; overflow-y: auto;
+                width: 100%; height: 50%; overflow-y: auto;
                 background: white; padding: 15px; box-sizing: border-box; border-top: 1px solid #eee;
             }
             .editor-right {
-                width: 100%; height: 55%; background: #f4f4f4;
+                width: 100%; height: 50%; background: #f4f4f4;
                 display: flex; align-items: center; justify-content: center; padding: 10px;
             }
             canvas { max-height: 100%; max-width: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
@@ -92,8 +90,8 @@
             color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(251, 111, 146, 0.4);
         }
         .section-header {
-            font-size: 12px; font-weight: bold; color: #888; text-transform: uppercase;
-            margin: 15px 0 8px 0; letter-spacing: 1px; border-bottom: 1px solid #eee; padding-bottom: 5px;
+            font-size: 13px; font-weight: bold; color: #333;
+            margin: 20px 0 10px 0; border-bottom: 1px solid #eee; padding-bottom: 5px; display: block;
         }
 
         /* 顏色/貼圖捲軸 */
@@ -102,7 +100,7 @@
             max-height: 120px; overflow-y: auto; padding: 2px;
         }
         .color-dot {
-            width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer;
+            width: 38px; height: 38px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer;
         }
         .sticker-item {
             font-size: 24px; background: #f9f9f9; border: 1px solid #eee; border-radius: 8px;
@@ -115,7 +113,7 @@
             border: 1px solid #ffe082; display: none;
         }
         .ctrl-row { display: flex; align-items: center; margin-bottom: 5px; gap: 10px; font-size: 14px; }
-        input[type="text"] { flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 6px; text-align: center; }
+        input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; text-align: center; }
 
         @media print {
             body { background: white; height: auto; overflow: visible; }
@@ -129,7 +127,7 @@
 <body>
 
     <div id="setup-page" class="app-container">
-        <h1 style="color:#fb6f92; margin-bottom:20px;">📸 人生四格 V.5</h1>
+        <h1 style="color:#fb6f92; margin-bottom:20px;">📸 人生四格 V.6</h1>
         <div style="background:white; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); width:100%; max-width:400px;">
             <div class="section-header">1. 版型尺寸</div>
             <div style="display:flex; justify-content:center;">
@@ -157,8 +155,7 @@
     <div id="editor-page">
         <div class="editor-left">
             <h3 style="margin:0 0 10px 0;">🎨 裝飾照片</h3>
-            <p style="font-size:12px; color:#666; margin-bottom:10px;">💡 提示：兩指可縮放，拖曳圓點可旋轉</p>
-
+            
             <div id="object-controls">
                 <div id="text-edit-row" class="ctrl-row">
                     <span>內容</span>
@@ -171,14 +168,18 @@
                 <button class="btn" style="background:#ffcdd2; color:#c62828; width:100%; font-size:12px; margin-top:5px;" onclick="deleteSelected()">🗑️ 刪除選取項目</button>
             </div>
 
-            <div class="section-header">背景 (純色 / 漸變)</div>
-            <div class="scroll-container" id="color-grid"></div>
-            <label class="btn" style="width:100%; box-sizing:border-box; margin-top:5px; font-size:12px; background:#e3f2fd; color:#1565c0; text-align:center; display:block;">
+            <div class="section-header">🎨 純色背景</div>
+            <div class="scroll-container" id="solid-color-grid"></div>
+            
+            <div class="section-header">🌈 漸變背景</div>
+            <div class="scroll-container" id="grad-color-grid"></div>
+
+            <label class="btn" style="width:100%; box-sizing:border-box; margin-top:10px; font-size:12px; background:#e3f2fd; color:#1565c0; text-align:center; display:block;">
                 📂 上傳背景圖
                 <input type="file" accept="image/*" onchange="uploadBg(this)" style="display:none;">
             </label>
 
-            <div class="section-header">貼圖庫</div>
+            <div class="section-header">✨ 貼圖庫</div>
             <div class="scroll-container" id="sticker-grid"></div>
             
             <div style="display:flex; gap:5px; margin-top:10px;">
@@ -202,7 +203,7 @@
     </div>
 
 <script>
-    // --- 素材庫 (V.3 的內容回歸) ---
+    // --- 素材庫 ---
     const SOLID_COLORS = [
         '#ffffff', '#000000', '#ffebf0', '#e0f7fa', '#fff3cd', 
         '#f3e5f5', '#e8f5e9', '#ffe0b2', '#d7ccc8', '#cfd8dc',
@@ -224,13 +225,10 @@
     let stream = null;
     let photos = [];
     let config = { format: '2x6', timer: 5, bg: '#ffebf0', bgType: 'color', bgImg: null };
-    
-    // 物件: {type, content, x, y, size, rotation, color, img}
     let elements = [];
     let selectedIdx = -1;
     
-    // 互動狀態
-    let interactionMode = 'NONE'; // NONE, DRAG, ROTATE, SCALE, PINCH
+    let interactionMode = 'NONE';
     let dragStart = {x:0, y:0};
     let initialPinchDist = 0;
     let initialScale = 1;
@@ -242,12 +240,14 @@
 
     // --- 初始化 ---
     function init() {
-        // 填入顏色
-        const colorGrid = document.getElementById('color-grid');
-        SOLID_COLORS.forEach(c => createColorBtn(c, false, colorGrid));
-        GRADIENTS.forEach(g => createColorBtn(g, true, colorGrid));
+        // V.6: 純色與漸變分開
+        const solidGrid = document.getElementById('solid-color-grid');
+        const gradGrid = document.getElementById('grad-color-grid');
+        
+        SOLID_COLORS.forEach(c => createColorBtn(c, false, solidGrid));
+        GRADIENTS.forEach(g => createColorBtn(g, true, gradGrid));
 
-        // 填入貼圖
+        // 貼圖
         const stickerGrid = document.getElementById('sticker-grid');
         EMOJIS.forEach(e => {
             const div = document.createElement('div');
@@ -256,7 +256,6 @@
             stickerGrid.appendChild(div);
         });
 
-        // 事件監聽 (支援滑鼠與觸控)
         canvas.addEventListener('mousedown', onPointerDown);
         canvas.addEventListener('touchstart', onPointerDown, {passive:false});
         window.addEventListener('mousemove', onPointerMove);
@@ -278,7 +277,7 @@
     }
     init();
 
-    // --- 1. 相機拍攝 ---
+    // --- 相機 ---
     function setFormat(f) { config.format = f; document.querySelectorAll('#setup-page .btn').forEach(b=>b.classList.remove('active')); document.getElementById('btn-'+f).classList.add('active'); }
     function setTimer(t, btn) { config.timer = t; btn.parentNode.querySelectorAll('.btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
@@ -323,21 +322,29 @@
     function wait(ms) { return new Promise(r=>setTimeout(r,ms)); }
     function flash() { const f=document.createElement('div'); f.style.cssText='position:fixed;inset:0;background:white;z-index:9999;'; document.body.appendChild(f); setTimeout(()=>f.remove(),100); }
 
-    // --- 2. 編輯器 ---
+    // --- 編輯器 ---
     function enterEditor() {
         document.getElementById('setup-page').style.display = 'none';
         document.getElementById('editor-page').style.display = 'flex';
         
-        // 預設物件
-        const cw = (config.format==='2x6')? 900 : 1800; const ch = 2400;
+        // V.6: 精準計算預設文字位置 (底部中間)
+        const pad=50, head=100, foot=400, photoH=600;
+        const totalH = head + (photoH*4) + (pad*5) + foot;
+        const totalW = (config.format==='2x6') ? (800+pad*2) : (800+pad*2)*2;
+        
+        // 日期時間
+        const dateStr = new Date().toLocaleString();
+
         elements = [
-            { type:'text', content:'LIFE4CUTS', x:cw/2, y:ch-250, size:80, rotation:0, color:'#333' },
-            { type:'text', content:new Date().toLocaleDateString(), x:cw/2, y:ch-150, size:40, rotation:0, color:'#666' }
+            // 標題 (LIFE4CUTS)
+            { type:'text', content:'LIFE4CUTS', x:totalW/2, y:totalH - 280, size:80, rotation:0, color:'#333' },
+            // 日期 (Date)
+            { type:'text', content:dateStr, x:totalW/2, y:totalH - 150, size:40, rotation:0, color:'#666' }
         ];
         renderCanvas();
     }
 
-    // --- 3. 繪圖核心 (含手柄) ---
+    // --- 繪圖核心 ---
     function renderCanvas() {
         const pW=800, pH=600, pad=50, head=100, foot=400;
         const colW=pW+pad*2, colH=head+(pH*4)+(pad*5)+foot;
@@ -387,50 +394,45 @@
                 ctx.drawImage(el.img, -w/2, -h/2, w, h);
             }
 
-            // 選取框與手柄
+            // 選取框 (V.6: 加大圓點與範圍)
             if(i === selectedIdx) {
-                // 框
+                const handleR = 25; // 加大半徑
+                const handleDist = 60; // 手柄距離物件邊緣的距離
+
                 ctx.strokeStyle = '#007bff'; ctx.lineWidth = 3;
                 ctx.strokeRect(-w/2-10, -h/2-10, w+20, h+20);
                 
                 // 旋轉手柄 (上方)
-                ctx.beginPath(); ctx.arc(0, -h/2-40, 15, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(0, -h/2-handleDist, handleR, 0, Math.PI*2);
                 ctx.fillStyle='#fff'; ctx.fill(); ctx.stroke();
-                ctx.fillStyle='#007bff'; ctx.font='20px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('⟳', 0, -h/2-38);
+                ctx.fillStyle='#007bff'; ctx.font='30px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('⟳', 0, -h/2-handleDist+2);
 
                 // 縮放手柄 (右下)
-                ctx.beginPath(); ctx.arc(w/2+10, h/2+10, 15, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(w/2+10, h/2+10, handleR, 0, Math.PI*2);
                 ctx.fillStyle='#fff'; ctx.fill(); ctx.stroke();
-                ctx.fillStyle='#007bff'; ctx.font='16px Arial'; ctx.fillText('⤡', w/2+10, h/2+12);
+                ctx.fillStyle='#007bff'; ctx.font='24px Arial'; ctx.fillText('⤡', w/2+10, h/2+12);
             }
             ctx.restore();
-            
-            // 儲存尺寸供點擊判定
             el._w = w; el._h = h;
         });
     }
 
-    // --- 4. 互動引擎 (V.5 重寫) ---
+    // --- 互動引擎 ---
     function getPointerPos(e) {
         const r = canvas.getBoundingClientRect();
         const sx = canvas.width/r.width, sy = canvas.height/r.height;
         const cx = e.touches ? e.touches[0].clientX : e.clientX;
         const cy = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x:(cx-r.left)*sx, y:(cy-r.top)*sy, clientX:cx, clientY:cy };
+        return { x:(cx-r.left)*sx, y:(cy-r.top)*sy };
     }
-
-    // 雙指距離
     function getPinchDist(e) {
         if(e.touches.length < 2) return 0;
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        return Math.hypot(dx, dy);
+        return Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
     }
 
     function onPointerDown(e) {
         e.preventDefault();
         
-        // 雙指縮放偵測
         if(e.touches && e.touches.length === 2 && selectedIdx !== -1) {
             interactionMode = 'PINCH';
             initialPinchDist = getPinchDist(e);
@@ -440,98 +442,67 @@
 
         const p = getPointerPos(e);
         
-        // 檢查手柄 (必須先檢查，且只針對已選取的)
         if(selectedIdx !== -1) {
             const el = elements[selectedIdx];
-            // 轉換點擊座標到物件局部座標
             const dx = p.x - el.x; const dy = p.y - el.y;
             const rad = -el.rotation * Math.PI/180;
             const lx = dx*Math.cos(rad) - dy*Math.sin(rad);
             const ly = dx*Math.sin(rad) + dy*Math.cos(rad);
-            
             const w = el._w, h = el._h;
+            const handleDist = 60; // 配合繪圖的距離
+            const hitR = 50; // 加大點擊判定範圍
 
-            // 旋轉手柄 (0, -h/2-40)
-            if(Math.hypot(lx - 0, ly - (-h/2-40)) < 30) {
-                interactionMode = 'ROTATE';
-                return;
-            }
-            // 縮放手柄 (w/2+10, h/2+10)
-            if(Math.hypot(lx - (w/2+10), ly - (h/2+10)) < 30) {
-                interactionMode = 'SCALE';
-                dragStart = {size: el.size, dist: Math.hypot(lx, ly)};
-                return;
+            // 旋轉判定 (上方)
+            if(Math.hypot(lx-0, ly-(-h/2-handleDist)) < hitR) { interactionMode='ROTATE'; return; }
+            // 縮放判定 (右下)
+            if(Math.hypot(lx-(w/2+10), ly-(h/2+10)) < hitR) { 
+                interactionMode='SCALE'; dragStart={size:el.size, dist:Math.hypot(lx,ly)}; return; 
             }
         }
 
-        // 檢查本體
         let hit = -1;
         for(let i=elements.length-1; i>=0; i--) {
             const el = elements[i];
             const dx = p.x - el.x; const dy = p.y - el.y;
-            // 簡單距離判定 (文字寬一點)
             const limit = Math.max(el._w, el._h)/1.5 + 20;
             if(Math.hypot(dx, dy) < limit) { hit = i; break; }
         }
 
-        selectedIdx = hit;
-        updateUI();
-        renderCanvas();
-
-        if(hit !== -1) {
-            interactionMode = 'DRAG';
-            dragStart = {x: p.x, y: p.y};
-        } else {
-            interactionMode = 'NONE';
-        }
+        selectedIdx = hit; updateUI(); renderCanvas();
+        if(hit !== -1) { interactionMode='DRAG'; dragStart={x:p.x, y:p.y}; } else { interactionMode='NONE'; }
     }
 
     function onPointerMove(e) {
         if(interactionMode === 'NONE') return;
         e.preventDefault();
 
-        // 雙指縮放
         if(interactionMode === 'PINCH' && e.touches && e.touches.length === 2) {
-            const dist = getPinchDist(e);
-            const scale = dist / initialPinchDist;
-            elements[selectedIdx].size = initialScale * scale;
-            renderCanvas();
-            return;
+            const s = getPinchDist(e) / initialPinchDist;
+            elements[selectedIdx].size = initialScale * s; renderCanvas(); return;
         }
 
         const p = getPointerPos(e);
         const el = elements[selectedIdx];
 
         if(interactionMode === 'DRAG') {
-            el.x += (p.x - dragStart.x);
-            el.y += (p.y - dragStart.y);
-            dragStart = {x: p.x, y: p.y};
-        } 
-        else if(interactionMode === 'ROTATE') {
-            const dx = p.x - el.x;
-            const dy = p.y - el.y;
-            // 計算角度 (+90度因為手柄在上方)
-            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            el.x += (p.x - dragStart.x); el.y += (p.y - dragStart.y);
+            dragStart = {x:p.x, y:p.y};
+        } else if(interactionMode === 'ROTATE') {
+            const angle = Math.atan2(p.y-el.y, p.x-el.x) * 180 / Math.PI;
             el.rotation = angle + 90;
+        } else if(interactionMode === 'SCALE') {
+            const dist = Math.hypot(p.x-el.x, p.y-el.y);
+            el.size = dragStart.size * (dist / dragStart.dist);
         }
-        else if(interactionMode === 'SCALE') {
-            // 滑鼠拖曳縮放手柄
-            const dist = Math.hypot(p.x - el.x, p.y - el.y);
-            // 簡單比例放大
-            const ratio = dist / dragStart.dist;
-            el.size = dragStart.size * ratio;
-        }
-
         renderCanvas();
     }
+    function onPointerUp() { interactionMode = 'NONE'; }
 
-    function onPointerUp(e) { interactionMode = 'NONE'; }
-
-    // --- 輔助功能 ---
+    // --- 輔助 ---
     function updateUI() {
-        const panel = document.getElementById('object-controls');
-        if(selectedIdx === -1) { panel.style.display='none'; return; }
-        panel.style.display = 'block';
+        const p = document.getElementById('object-controls');
+        if(selectedIdx===-1) { p.style.display='none'; return; }
+        p.style.display='block';
         const el = elements[selectedIdx];
         if(el.type==='text') {
             document.getElementById('text-edit-row').style.display='flex';
@@ -543,21 +514,16 @@
             document.getElementById('color-edit-row').style.display='none';
         }
     }
-
     function updateSelectedText(v) { if(selectedIdx!==-1){elements[selectedIdx].content=v; renderCanvas();}}
     function updateSelectedColor(v) { if(selectedIdx!==-1){elements[selectedIdx].color=v; renderCanvas();}}
     function deleteSelected() { if(selectedIdx!==-1){elements.splice(selectedIdx,1); selectedIdx=-1; updateUI(); renderCanvas();}}
 
     function addTextObject() { addElement({type:'text', content:'請輸入文字', size:60, color:'#000000'}); }
-    function addElement(props) {
-        elements.push({x:canvas.width/2, y:canvas.height/2, rotation:0, ...props});
-        selectedIdx=elements.length-1; updateUI(); renderCanvas();
-    }
+    function addElement(props) { elements.push({x:canvas.width/2, y:canvas.height/2, rotation:0, ...props}); selectedIdx=elements.length-1; updateUI(); renderCanvas(); }
     
     function uploadBg(input) { if(input.files[0]) { const i=new Image(); i.onload=()=>{config.bgImg=i;config.bgType='image';renderCanvas();}; i.src=URL.createObjectURL(input.files[0]); } }
     function uploadSticker(input) { if(input.files[0]) { const i=new Image(); i.onload=()=>{addElement({type:'image', img:i, size:200});}; i.src=URL.createObjectURL(input.files[0]); } }
-
-    function downloadImage() { selectedIdx=-1; renderCanvas(); const l=document.createElement('a'); l.download=`life4cuts-v5-${Date.now()}.png`; l.href=canvas.toDataURL(); l.click(); }
+    function downloadImage() { selectedIdx=-1; renderCanvas(); const l=document.createElement('a'); l.download=`life4cuts-v6-${Date.now()}.png`; l.href=canvas.toDataURL(); l.click(); }
 </script>
 </body>
 </html>
