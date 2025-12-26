@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Life4Cuts 韓系拍貼機</title>
+    <title>📸 人生四格 V.1</title>
     <style>
-        /* --- 🎨 1. 整體視覺設計 (Visual Design) --- */
+        /* --- 🎨 V.1 視覺風格 --- */
         :root {
-            --primary: #ff8fab;    /* 韓系柔粉 */
+            --primary: #ff8fab;
             --primary-dark: #fb6f92;
-            --accent: #a2d2ff;     /* 柔粉藍 */
-            --bg-body: #fff0f5;    /* 淺粉背景 */
-            --text-main: #594a4e;
+            --bg-body: #fff0f5;
             --card-bg: rgba(255, 255, 255, 0.95);
             --shadow: 0 8px 20px rgba(255, 143, 171, 0.25);
         }
@@ -19,236 +17,193 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-body);
-            color: var(--text-main);
+            color: #444;
             margin: 0;
-            padding: 20px 10px; /* 手機版留邊距 */
+            padding: 20px 10px;
             text-align: center;
-            /* 防止手機下拉重新整理影響體驗 */
-            overscroll-behavior-y: none; 
+            overscroll-behavior-y: none;
+            user-select: none; /* 防止長按選取文字 */
         }
 
-        h1 {
-            color: var(--primary-dark);
-            font-size: 24px;
-            margin: 10px 0;
-            letter-spacing: 1px;
-        }
+        h1 { margin: 10px 0; color: var(--primary-dark); font-size: 22px; letter-spacing: 1px; }
 
-        /* --- 📱 2. 手機版面容器 (Responsive Container) --- */
-        .app-container {
-            max-width: 600px; /* 限制最大寬度，電腦版也不會太寬 */
-            margin: 0 auto;
-            padding-bottom: 50px;
-        }
+        .app-container { max-width: 600px; margin: 0 auto; padding-bottom: 60px; }
 
+        /* --- 面板樣式 --- */
         .panel {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 20px;
+            padding: 15px;
             margin-bottom: 20px;
             box-shadow: var(--shadow);
-            backdrop-filter: blur(10px); /* 磨砂玻璃質感 */
             border: 1px solid rgba(255,255,255,0.8);
         }
 
-        /* --- 🔘 3. 精緻按鈕樣式 (Buttons) --- */
+        /* --- 按鈕樣式 --- */
         .btn {
             border: none;
-            padding: 10px 18px;
-            border-radius: 50px; /* 膠囊狀 */
+            padding: 8px 16px;
+            border-radius: 50px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             background: #f0f0f0;
             color: #666;
-            margin: 4px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            /* 防止手機點擊反白 */
-            -webkit-tap-highlight-color: transparent; 
+            margin: 3px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            -webkit-tap-highlight-color: transparent;
         }
-
         .btn:active { transform: scale(0.95); }
-
-        .btn.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 10px rgba(255, 143, 171, 0.4);
-        }
-
+        .btn.active { background: var(--primary); color: white; }
+        
         .btn-xl {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            margin: 10px 0;
+            width: 100%; padding: 14px; font-size: 18px; margin-top: 10px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: 0 6px 15px rgba(251, 111, 146, 0.4);
+            color: white; box-shadow: 0 4px 12px rgba(251, 111, 146, 0.4);
         }
 
-        /* --- 📹 4. 相機與預覽 (Camera) --- */
+        /* --- 相機預覽 (嚴格 4:3) --- */
         #camera-wrapper {
             position: relative;
             width: 100%;
+            max-width: 480px; /* 限制最大寬度 */
+            margin: 0 auto 20px auto;
             background: #000;
-            border-radius: 16px;
+            border-radius: 12px;
             overflow: hidden;
             box-shadow: var(--shadow);
-            aspect-ratio: 3/4; /* 強制直式比例，適合手機自拍 */
-            margin-bottom: 20px;
+            display: none; /* 預設隱藏，按開始才顯示 */
+            
+            /* 強制 4:3 比例 (Aspect Ratio) */
+            aspect-ratio: 3 / 4; 
         }
 
         video {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 填滿容器 */
-            transform: scaleX(-1); /* 鏡像 */
+            object-fit: cover; /* 填滿 4:3 容器 */
+            transform: scaleX(-1);
         }
 
         #countdown {
-            position: absolute;
-            top: 50%; left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 8rem;
-            color: white;
-            font-weight: 900;
+            font-size: 6rem; color: white; font-weight: 900;
             text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            display: none;
-            z-index: 10;
+            display: none; z-index: 10;
         }
 
-        /* --- 🖼️ 5. 結果區 (Result) --- */
+        /* --- Canvas 編輯區 --- */
         #result-area { display: none; }
         
-        canvas {
+        .canvas-container {
+            position: relative;
             width: 100%;
-            height: auto;
-            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
             box-shadow: var(--shadow);
-            margin-bottom: 15px;
-        }
-
-        /* --- 🎛️ 6. 控制項群組 (Input Groups) --- */
-        .control-section {
-            text-align: left;
-            margin-bottom: 15px;
-        }
-        .section-title {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 5px;
-            display: block;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            border-radius: 8px;
+            touch-action: none; /* 防止拖曳貼圖時捲動頁面 */
         }
         
-        /* 美化輸入框 */
+        canvas { display: block; width: 100%; height: auto; }
+
+        /* --- 控制項 --- */
+        .section-title {
+            font-size: 12px; color: #888; display: block; margin: 8px 0 4px; font-weight: bold;
+        }
         input[type="text"] {
-            width: 100%;
-            box-sizing: border-box; /* 確保 padding 不會撐爆寬度 */
-            padding: 10px;
-            border: 2px solid #eee;
-            border-radius: 10px;
-            font-size: 16px;
-            text-align: center;
-            outline: none;
-            color: var(--text-main);
-            background: #fafafa;
+            width: 80%; padding: 8px; border: 2px solid #eee; border-radius: 8px; text-align: center;
         }
-        input[type="text"]:focus { border-color: var(--accent); background: white; }
-
-        input[type="color"] {
-            border: none; width: 40px; height: 40px; cursor: pointer; background: none;
+        
+        /* 貼圖按鈕網格 */
+        .sticker-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 5px;
+        }
+        .sticker-btn {
+            background: #fff; border: 1px solid #eee; font-size: 20px; padding: 5px; border-radius: 8px; cursor: pointer;
         }
 
-        /* 列印模式隱藏 */
         @media print {
-            body { background: white; padding: 0; margin: 0; }
-            .no-print, h1, .panel { display: none !important; }
-            #result-area { display: block !important; position: absolute; top:0; left:0; width:100%; }
-            canvas { box-shadow: none; width: 100%; max-height: 100vh; object-fit: contain; }
+            body { background: white; padding: 0; }
+            .no-print, .panel { display: none !important; }
+            #result-area { display: block !important; }
+            canvas { max-height: 100vh; width: auto; margin: 0 auto; }
         }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <h1 class="no-print">☁️ Life4Cuts</h1>
+    <h1 class="no-print">📸 人生四格 V.1</h1>
 
     <div id="setup-panel" class="panel no-print">
-        <div class="control-section">
-            <span class="section-title">1. 版型尺寸</span>
-            <button id="btn-2x6" class="btn active" onclick="setFormat('2x6')">2x6 (書籤)</button>
-            <button id="btn-4x6" class="btn" onclick="setFormat('4x6')">4x6 (相片)</button>
-        </div>
+        <div class="section-title">版型尺寸</div>
+        <button id="btn-2x6" class="btn active" onclick="setFormat('2x6')">2x6 (書籤)</button>
+        <button id="btn-4x6" class="btn" onclick="setFormat('4x6')">4x6 (相片)</button>
 
-        <div class="control-section">
-            <span class="section-title">2. 倒數秒數</span>
-            <div style="display:flex; justify-content:space-between;">
-                <button class="btn" onclick="setTimer(3, this)">3秒</button>
-                <button class="btn active" id="default-timer" onclick="setTimer(5, this)">5秒</button>
-                <button class="btn" onclick="setTimer(10, this)">10秒</button>
-            </div>
-        </div>
+        <div class="section-title">倒數秒數</div>
+        <button class="btn" onclick="setTimer(3, this)">3秒</button>
+        <button class="btn active" onclick="setTimer(5, this)">5秒</button>
+        <button class="btn" onclick="setTimer(10, this)">10秒</button>
 
-        <button class="btn btn-xl" onclick="startCapture()">📸 開始拍攝</button>
-        <p style="font-size:12px; color:#999;">*請允許相機權限，支援 iPhone/Android</p>
+        <button class="btn btn-xl" onclick="startCameraProcess()">📸 開啟鏡頭並拍攝</button>
+        <p style="font-size:11px; color:#aaa; margin-top:5px;">(拍攝完成後鏡頭將自動關閉)</p>
     </div>
 
     <div id="camera-wrapper" class="no-print">
-        <video id="video" autoplay playsinline muted></video> <div id="countdown"></div>
+        <video id="video" autoplay playsinline muted></video>
+        <div id="countdown"></div>
     </div>
 
     <div id="result-area">
         <div class="panel no-print">
-            <div class="control-section">
-                <span class="section-title">🎨 背景顏色 / 圖片</span>
-                <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
-                    <button class="btn" style="background:#fff; border:1px solid #ddd;" onclick="setBgColor('#ffffff')">白</button>
-                    <button class="btn" style="background:#000; color:#fff;" onclick="setBgColor('#000000')">黑</button>
-                    <button class="btn" style="background:#ffebf0;" onclick="setBgColor('#ffebf0')">粉</button>
-                    <button class="btn" style="background:#e0f7fa;" onclick="setBgColor('#e0f7fa')">藍</button>
-                    <input type="color" oninput="setBgColor(this.value)">
-                </div>
-                <div style="margin-top:8px;">
-                    <label class="btn" style="font-size:12px; padding:5px 10px;">
-                        📂 上傳背景圖
-                        <input type="file" accept="image/*" onchange="uploadBackground(this)" style="display:none;">
-                    </label>
-                </div>
+            <div class="section-title">🎨 裝飾照片 (可拖曳貼圖，點兩下刪除)</div>
+            
+            <div style="margin-bottom:10px;">
+                <button class="btn" style="background:#fff; border:1px solid #ddd;" onclick="setBgColor('#ffffff')">白</button>
+                <button class="btn" style="background:#222; color:#fff;" onclick="setBgColor('#000000')">黑</button>
+                <button class="btn" style="background:#ffebf0;" onclick="setBgColor('#ffebf0')">粉</button>
+                <button class="btn" style="background:#e0f7fa;" onclick="setBgColor('#e0f7fa')">藍</button>
+                <input type="color" oninput="setBgColor(this.value)" style="vertical-align:middle; width:30px; border:none;">
             </div>
 
-            <div class="control-section">
-                <span class="section-title">✨ 特效 & 貼圖</span>
-                <button class="btn" onclick="toggleEffect('none')">無</button>
-                <button class="btn" onclick="toggleEffect('hearts')">❤️</button>
-                <button class="btn" onclick="toggleEffect('stars')">✨</button>
-                <button class="btn" onclick="toggleEffect('bear')">🐻</button>
-                <button class="btn" onclick="toggleEffect('crayon')">🖍️</button>
-                <label class="btn" style="background:#fff3cd;">
-                    📂 上傳卡通貼圖
-                    <input type="file" accept="image/png" onchange="uploadSticker(this)" style="display:none;">
+            <input type="text" id="footer-text" value="MY LIFE 4 CUTS" placeholder="輸入底部文字" oninput="redrawAll()">
+            <div style="margin-top:5px;">
+                <label style="font-size:12px;"><input type="checkbox" id="chk-date" checked onchange="redrawAll()"> 顯示日期</label>
+            </div>
+
+            <div class="section-title">✨ 添加特效 (點擊新增)</div>
+            <div class="sticker-grid">
+                <button class="sticker-btn" onclick="addEmojiSticker('❤️')">❤️</button>
+                <button class="sticker-btn" onclick="addEmojiSticker('✨')">✨</button>
+                <button class="sticker-btn" onclick="addEmojiSticker('🎀')">🎀</button>
+                <button class="sticker-btn" onclick="addEmojiSticker('🐱')">🐱</button>
+                <button class="sticker-btn" onclick="addEmojiSticker('🐶')">🐶</button>
+                <button class="sticker-btn" onclick="addEmojiSticker('🔥')">🔥</button>
+                <button class="sticker-btn" onclick="addEmojiSticker('👑')">👑</button>
+                <button class="sticker-btn" onclick="addEmojiSticker('🕶️')">🕶️</button>
+                <button class="sticker-btn" onclick="addEmojiSticker('🌈')">🌈</button>
+                <button class="sticker-btn" onclick="addEmojiSticker('🌸')">🌸</button>
+            </div>
+            
+            <div style="margin-top:10px;">
+                <label class="btn" style="font-size:12px; display:block;">
+                    📂 上傳圖片貼圖 (PNG)
+                    <input type="file" accept="image/*" onchange="uploadSticker(this)" style="display:none;">
                 </label>
             </div>
 
-            <div class="control-section">
-                <span class="section-title">✍️ 文字與日期 (自由修改)</span>
-                <input type="text" id="footer-text" value="MY LIFE 4 CUTS" placeholder="輸入底部文字" oninput="renderFinalImage()" style="margin-bottom: 8px;">
-                <input type="text" id="date-text" placeholder="輸入日期 (或留空)" oninput="renderFinalImage()">
-            </div>
-
-            <div style="display: flex; gap:10px;">
-                <button class="btn btn-xl" style="background: #333;" onclick="downloadImage()">⬇ 下載</button>
-                <button class="btn btn-xl" onclick="location.reload()">🔄 重來</button>
-            </div>
-            <div style="margin-top:5px;">
-                 <button class="btn" onclick="window.print()">🖨️ 列印模式</button>
+            <div style="margin-top:15px; display: flex; gap:10px;">
+                <button class="btn btn-xl" onclick="downloadImage()">⬇ 下載圖片</button>
+                <button class="btn btn-xl" style="background:#666;" onclick="location.reload()">🔄 重來</button>
             </div>
         </div>
 
-        <canvas id="finalCanvas"></canvas>
+        <div class="canvas-container">
+            <canvas id="finalCanvas"></canvas>
+        </div>
     </div>
 </div>
 
@@ -258,48 +213,61 @@
     const finalCanvas = document.getElementById('finalCanvas');
     const ctx = finalCanvas.getContext('2d');
     const countdownEl = document.getElementById('countdown');
-    
-    // 狀態
+    const setupPanel = document.getElementById('setup-panel');
+    const cameraWrapper = document.getElementById('camera-wrapper');
+    const resultArea = document.getElementById('result-area');
+
+    let streamObj = null;
     let photos = [];
     let currentFormat = '2x6';
     let timerSeconds = 5;
+
+    // --- 編輯狀態 (V.1 新增) ---
+    let bgColor = '#ffebf0';
+    let stickers = []; // 儲存所有貼圖物件: {type: 'text'|'image', content: '❤️'|imgObj, x, y, size}
+    let isDragging = false;
+    let dragTarget = null;
+    let lastMouseX, lastMouseY;
+
+    // --- 1. 相機控制 (隱私優先) ---
     
-    // 裝飾狀態
-    let bgType = 'color'; // 'color' or 'image'
-    let bgValue = '#ffebf0'; 
-    let customBgImg = null;
-    let effectType = 'none';
-    let customStickerImg = null;
-
-    // --- 1. 初始化：相機 (iPhone 優化) ---
-    // 使用 environment 還是 user 鏡頭？這裡優先使用前鏡頭 (user)
-    const constraints = {
-        audio: false,
-        video: {
-            facingMode: "user", // 前鏡頭
-            width: { ideal: 1280 },
-            height: { ideal: 960 } // 4:3 比例
+    async function startCameraProcess() {
+        setupPanel.style.display = 'none';
+        cameraWrapper.style.display = 'block'; // 顯示預覽框
+        
+        try {
+            // 開啟相機
+            streamObj = await navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 960 } }
+            });
+            video.srcObject = streamObj;
+            
+            // 等待一下讓相機準備好
+            await new Promise(r => setTimeout(r, 1000));
+            
+            startCaptureLoop();
+        } catch (err) {
+            alert("無法開啟相機，請檢查權限");
+            location.reload();
         }
-    };
+    }
 
-    navigator.mediaDevices.getUserMedia(constraints)
-        .then(stream => {
-            video.srcObject = stream;
-            // 預先填入今天日期
-            const today = new Date();
-            document.getElementById('date-text').value = today.toLocaleDateString() + " " + today.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        })
-        .catch(err => {
-            console.error(err);
-            alert("⚠️ 無法開啟相機。若使用 iPhone，請確保用 Safari 開啟並按「允許」。");
-        });
+    function stopCamera() {
+        if (streamObj) {
+            streamObj.getTracks().forEach(track => track.stop());
+            streamObj = null;
+        }
+        cameraWrapper.style.display = 'none'; // 拍攝完隱藏
+    }
 
-    // --- 2. 設定功能 ---
+    // --- 2. 拍攝流程 ---
     function setFormat(fmt) {
         currentFormat = fmt;
-        document.querySelectorAll('#setup-panel .control-section:nth-child(1) .btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#setup-panel .btn').forEach(b => {
+             if(b.id === 'btn-2x6' || b.id === 'btn-4x6') b.classList.remove('active');
+        });
         document.getElementById('btn-'+fmt).classList.add('active');
-        if(photos.length === 4) renderFinalImage();
     }
 
     function setTimer(sec, btn) {
@@ -308,26 +276,20 @@
         btn.classList.add('active');
     }
 
-    // --- 3. 拍攝流程 ---
-    async function startCapture() {
+    async function startCaptureLoop() {
         photos = [];
-        document.getElementById('setup-panel').style.display = 'none';
-        document.getElementById('result-area').style.display = 'none';
-        
-        // 滾動到相機
-        document.getElementById('camera-wrapper').scrollIntoView({behavior:'smooth'});
+        // 滾動到相機位置
+        cameraWrapper.scrollIntoView({behavior:'smooth'});
 
         for(let i=1; i<=4; i++) {
             await runCountdown(timerSeconds);
             capturePhoto();
         }
 
-        // 拍完處理
-        document.getElementById('result-area').style.display = 'block';
-        renderFinalImage();
-        // 隱藏相機預覽，專注在結果
-        document.getElementById('camera-wrapper').style.display = 'none';
-        location.href = "#result-area";
+        // 拍完 4 張
+        stopCamera(); // 關閉鏡頭
+        resultArea.style.display = 'block';
+        initCanvasEditor(); // 初始化編輯器
     }
 
     function runCountdown(sec) {
@@ -347,20 +309,18 @@
         });
     }
 
-    // 智能裁切拍照 (保持 4:3 比例不變形)
     function capturePhoto() {
         const tempC = document.createElement('canvas');
         const w = 800;
-        const h = 600; // 4:3
+        const h = 600; // 4:3 比例
         tempC.width = w;
         tempC.height = h;
         const tCtx = tempC.getContext('2d');
         
-        // 鏡像
         tCtx.translate(w, 0);
         tCtx.scale(-1, 1);
 
-        // 計算裁切
+        // 裁切邏輯：確保和預覽框一樣是 4:3
         const vw = video.videoWidth;
         const vh = video.videoHeight;
         const rRatio = w/h;
@@ -372,138 +332,63 @@
         } else {
             sw = vw; sh = vw / rRatio; sx = 0; sy = (vh-sh)/2;
         }
-
         tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
         photos.push(tempC);
 
         // 閃光特效
         const flash = document.createElement('div');
-        flash.style.position = 'fixed';
-        flash.style.top=0; flash.style.left=0; flash.style.width='100%'; flash.style.height='100%';
-        flash.style.background='white'; flash.style.zIndex='999';
+        flash.style.position = 'fixed'; top:0; left:0; width:'100%'; height:'100%';
+        flash.style.background='white'; flash.style.zIndex='9999';
         document.body.appendChild(flash);
         setTimeout(() => flash.remove(), 100);
     }
 
-    // --- 4. 裝飾功能 ---
-    function setBgColor(val) {
-        bgType = 'color';
-        bgValue = val;
-        renderFinalImage();
-    }
+    // --- 3. 畫布編輯引擎 (V.1 核心) ---
     
-    function uploadBackground(input) {
-        if(input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = new Image();
-                img.onload = () => {
-                    customBgImg = img;
-                    bgType = 'image';
-                    renderFinalImage();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+    function initCanvasEditor() {
+        // 設定 Canvas 初始大小並繪製
+        redrawAll();
+        
+        // 綁定拖曳事件
+        finalCanvas.addEventListener('mousedown', handlePointerDown);
+        finalCanvas.addEventListener('touchstart', handlePointerDown, {passive: false});
+        
+        window.addEventListener('mousemove', handlePointerMove);
+        window.addEventListener('touchmove', handlePointerMove, {passive: false});
+        
+        window.addEventListener('mouseup', handlePointerUp);
+        window.addEventListener('touchend', handlePointerUp);
+        
+        // 雙擊刪除
+        finalCanvas.addEventListener('dblclick', handleDoubleClick);
     }
 
-    function toggleEffect(eff) {
-        effectType = eff;
-        renderFinalImage();
-    }
-
-    function uploadSticker(input) {
-        if(input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = new Image();
-                img.onload = () => {
-                    customStickerImg = img;
-                    toggleEffect('custom');
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // --- 5. 最終合成渲染 (Canvas) ---
-    function renderFinalImage() {
-        if(photos.length < 4) return;
-
-        // 參數設定
+    // 重繪整個畫面 (背景 -> 照片 -> 貼圖)
+    function redrawAll() {
         const photoW = 800;
         const photoH = 600;
         const padding = 50;
         const headerH = 80;
-        const footerH = 350; // 底部留空間給兩行文字
+        const footerH = 350;
 
         const stripW = photoW + (padding*2);
         const stripH = headerH + (photoH*4) + (padding*5) + footerH;
-
+        
         let finalW = (currentFormat === '2x6') ? stripW : stripW*2;
         let finalH = stripH;
 
         finalCanvas.width = finalW;
         finalCanvas.height = finalH;
 
-        // A. 畫背景
-        if(bgType === 'color') {
-            ctx.fillStyle = bgValue;
-            ctx.fillRect(0, 0, finalW, finalH);
-        } else if (bgType === 'image' && customBgImg) {
-            // 背景圖 Cover 模式
-            const iRatio = customBgImg.width / customBgImg.height;
-            const cRatio = finalW / finalH;
-            let sx, sy, sw, sh;
-            if(iRatio > cRatio) {
-                sh = customBgImg.height; sw = sh * cRatio; sy=0; sx=(customBgImg.width-sw)/2;
-            } else {
-                sw = customBgImg.width; sh = sw / cRatio; sx=0; sy=(customBgImg.height-sh)/2;
-            }
-            ctx.drawImage(customBgImg, sx, sy, sw, sh, 0, 0, finalW, finalH);
-        }
+        // 1. 畫背景
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, finalW, finalH);
 
-        // B. 畫照片條
-        function drawStrip(offsetX) {
-            photos.forEach((p, i) => {
-                const x = offsetX + padding;
-                const y = headerH + padding + (i * (photoH + padding));
-                
-                // 白框
-                ctx.fillStyle = "white";
-                ctx.fillRect(x-15, y-15, photoW+30, photoH+30);
-                
-                // 照片
-                ctx.drawImage(p, x, y, photoW, photoH);
-
-                // 特效
-                drawEffects(x, y, photoW, photoH, i);
-            });
-
-            // C. 底部文字 (使用輸入框的值)
-            ctx.textAlign = "center";
-            const textColor = (bgValue === '#000000') ? "#fff" : "#444";
-            ctx.fillStyle = textColor;
-            
-            // 主標題
-            const text1 = document.getElementById('footer-text').value;
-            ctx.font = "bold 60px 'Segoe UI', Arial";
-            ctx.fillText(text1, offsetX + stripW/2, finalH - 180);
-
-            // 日期時間 (副標題)
-            const text2 = document.getElementById('date-text').value;
-            ctx.font = "30px 'Segoe UI', Arial";
-            ctx.fillText(text2, offsetX + stripW/2, finalH - 100);
-        }
-
-        if(currentFormat === '2x6') {
-            drawStrip(0);
-        } else {
-            drawStrip(0);
-            drawStrip(stripW);
-            // 切割線
+        // 2. 畫照片條 (Base)
+        drawPhotoStrip(0, stripW, finalH, photoW, photoH, headerH, padding);
+        if (currentFormat === '4x6') {
+            drawPhotoStrip(stripW, stripW, finalH, photoW, photoH, headerH, padding);
+            // 虛線
             ctx.beginPath();
             ctx.setLineDash([20, 20]);
             ctx.moveTo(stripW, 0);
@@ -512,38 +397,164 @@
             ctx.lineWidth = 4;
             ctx.stroke();
         }
+
+        // 3. 畫所有貼圖
+        ctx.setLineDash([]); // 重置虛線
+        stickers.forEach(s => {
+            ctx.save();
+            ctx.translate(s.x, s.y);
+            if(s.type === 'text') {
+                ctx.font = `${s.size}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(s.content, 0, 0);
+            } else if (s.type === 'image') {
+                // 圖片置中繪製
+                ctx.drawImage(s.content, -s.size/2, -(s.size * s.ratio)/2, s.size, s.size * s.ratio);
+            }
+            ctx.restore();
+        });
     }
 
-    function drawEffects(x, y, w, h, i) {
-        if(effectType === 'none') return;
+    function drawPhotoStrip(offsetX, stripW, stripH, pW, pH, headerH, pad) {
+        // 畫照片
+        photos.forEach((p, i) => {
+            const x = offsetX + pad;
+            const y = headerH + pad + (i * (pH + pad));
+            ctx.fillStyle = "white";
+            ctx.fillRect(x-15, y-15, pW+30, pH+30);
+            ctx.drawImage(p, x, y, pW, pH);
+        });
+
+        // 畫文字
+        ctx.fillStyle = (bgColor === '#000000') ? '#fff' : '#333';
+        ctx.textAlign = 'center';
         
-        // 讓貼圖有點隨機感
-        const offset = (i % 2 === 0) ? 0 : 30;
+        const txt1 = document.getElementById('footer-text').value;
+        ctx.font = "bold 60px Arial";
+        ctx.fillText(txt1, offsetX + stripW/2, stripH - 180);
+
+        if(document.getElementById('chk-date').checked) {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+            ctx.font = "30px Arial";
+            ctx.fillText(dateStr, offsetX + stripW/2, stripH - 100);
+        }
+    }
+
+    // --- 4. 貼圖控制系統 ---
+
+    function setBgColor(c) { bgColor = c; redrawAll(); }
+
+    function addEmojiSticker(emoji) {
+        stickers.push({
+            type: 'text',
+            content: emoji,
+            x: finalCanvas.width / 2, // 預設在中間
+            y: finalCanvas.height / 2,
+            size: 150 // 大小
+        });
+        redrawAll();
+        // 提示用戶可以拖曳
+        if(stickers.length === 1) alert("貼圖已新增！請用手指或滑鼠拖曳位置，點兩下可刪除。");
+    }
+
+    function uploadSticker(input) {
+        if(input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    stickers.push({
+                        type: 'image',
+                        content: img,
+                        x: finalCanvas.width / 2,
+                        y: finalCanvas.height / 2,
+                        size: 200, // 預設寬度
+                        ratio: img.height / img.width
+                    });
+                    redrawAll();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // --- 5. 拖曳邏輯 ---
+    function getPointerPos(e) {
+        const rect = finalCanvas.getBoundingClientRect();
+        const scaleX = finalCanvas.width / rect.width;
+        const scaleY = finalCanvas.height / rect.height;
         
-        ctx.font = "80px Arial";
-        if(effectType === 'hearts') {
-            ctx.fillText("❤️", x+20, y+80);
-            ctx.fillText("🥰", x+w-80, y+h-20);
-        } else if(effectType === 'stars') {
-            ctx.fillText("✨", x+20+offset, y+80);
-            ctx.fillText("💫", x+w-80-offset, y+h-30);
-        } else if(effectType === 'bear') {
-            ctx.fillText("🧸", x+w-90, y+h-20);
-        } else if(effectType === 'crayon') {
-             ctx.fillText("🖍️", x+20, y+80);
-             ctx.fillText("🌈", x+w-80, y+h-20);
-        } else if(effectType === 'custom' && customStickerImg) {
-            // 繪製上傳的貼圖
-            const sW = 180;
-            const sH = (customStickerImg.height / customStickerImg.width) * sW;
-            ctx.drawImage(customStickerImg, x + w - sW - 10, y + h - sH - 10, sW, sH);
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+    function handlePointerDown(e) {
+        e.preventDefault(); // 防止滾動
+        const pos = getPointerPos(e);
+        
+        // 從最上面的貼圖開始檢查是否點中 (反向迴圈)
+        for (let i = stickers.length - 1; i >= 0; i--) {
+            const s = stickers[i];
+            // 簡單判定：距離中心點一定範圍內
+            const hitDist = (s.type === 'text') ? s.size/1.5 : s.size/1.5;
+            
+            if (Math.abs(pos.x - s.x) < hitDist && Math.abs(pos.y - s.y) < hitDist) {
+                isDragging = true;
+                dragTarget = i;
+                lastMouseX = pos.x;
+                lastMouseY = pos.y;
+                return;
+            }
+        }
+    }
+
+    function handlePointerMove(e) {
+        if (!isDragging || dragTarget === null) return;
+        e.preventDefault();
+        
+        const pos = getPointerPos(e);
+        const dx = pos.x - lastMouseX;
+        const dy = pos.y - lastMouseY;
+
+        stickers[dragTarget].x += dx;
+        stickers[dragTarget].y += dy;
+
+        lastMouseX = pos.x;
+        lastMouseY = pos.y;
+        redrawAll();
+    }
+
+    function handlePointerUp(e) {
+        isDragging = false;
+        dragTarget = null;
+    }
+
+    function handleDoubleClick(e) {
+        const pos = getPointerPos(e);
+        // 刪除被點擊的貼圖
+        for (let i = stickers.length - 1; i >= 0; i--) {
+            const s = stickers[i];
+            const hitDist = (s.type === 'text') ? s.size/1.5 : s.size/1.5;
+            if (Math.abs(pos.x - s.x) < hitDist && Math.abs(pos.y - s.y) < hitDist) {
+                stickers.splice(i, 1); // 移除
+                redrawAll();
+                return;
+            }
         }
     }
 
     function downloadImage() {
         const link = document.createElement('a');
-        link.download = `life4cuts-${Date.now()}.png`;
-        link.href = finalCanvas.toDataURL('image/png', 1.0);
+        link.download = `life4cuts-v1-${Date.now()}.png`;
+        link.href = finalCanvas.toDataURL('image/png');
         link.click();
     }
 </script>
