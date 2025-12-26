@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>📸 人生四格 V.6</title>
+    <title>📸 人生四格 V.7</title>
     <style>
-        /* --- 🎨 V.6 樣式 --- */
+        /* --- 🎨 V.7 樣式 --- */
         :root {
             --primary: #ff8fab;
             --primary-dark: #fb6f92;
@@ -19,7 +19,7 @@
             color: #444; margin: 0; padding: 0;
             height: 100vh; overscroll-behavior: none; 
             user-select: none; -webkit-user-select: none;
-            overflow: hidden;
+            overflow: hidden; /* 防止頁面滾動 */
         }
 
         /* --- 全螢幕拍攝 --- */
@@ -39,7 +39,7 @@
             text-shadow: 0 5px 20px rgba(0,0,0,0.8); display: none;
         }
 
-        /* --- 版面配置 --- */
+        /* --- 版面配置 (Layout) --- */
         .app-container { display: flex; flex-direction: column; height: 100vh; }
         
         #setup-page {
@@ -49,26 +49,44 @@
 
         #editor-page { display: none; height: 100%; width: 100%; }
 
+        /* 左側面板結構 (V.7 修正溢出問題) */
+        .editor-left {
+            display: flex; flex-direction: column; /* 垂直排列 */
+            background: white; z-index: 10;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.05);
+        }
+
+        /* 頂部固定區 (編輯控制項) */
+        .editor-top-fixed {
+            flex-shrink: 0; padding: 15px; border-bottom: 1px solid #eee;
+            background: #fff;
+        }
+
+        /* 底部捲動區 (素材庫) */
+        .editor-scroll-area {
+            flex: 1; overflow-y: auto; padding: 15px;
+            /* 隱藏捲軸但保留功能 */
+            scrollbar-width: thin;
+        }
+
         @media (min-width: 768px) {
             #editor-page { flex-direction: row; }
             .editor-left {
-                width: var(--panel-width); height: 100%; overflow-y: auto;
-                background: white; border-right: 1px solid #eee; padding: 20px;
-                box-sizing: border-box; box-shadow: 5px 0 15px rgba(0,0,0,0.05); z-index: 10;
+                width: var(--panel-width); height: 100%; 
+                border-right: 1px solid #eee;
             }
             .editor-right {
                 flex: 1; height: 100%; background: #eee;
                 display: flex; align-items: center; justify-content: center;
                 padding: 40px; overflow: hidden;
             }
-            canvas { max-height: 90vh; max-width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+            canvas { max-height: 95vh; max-width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         }
 
         @media (max-width: 767px) {
             #editor-page { flex-direction: column-reverse; }
             .editor-left {
-                width: 100%; height: 50%; overflow-y: auto;
-                background: white; padding: 15px; box-sizing: border-box; border-top: 1px solid #eee;
+                width: 100%; height: 50%; border-top: 1px solid #eee;
             }
             .editor-right {
                 width: 100%; height: 50%; background: #f4f4f4;
@@ -79,8 +97,8 @@
 
         /* --- UI 元件 --- */
         .btn {
-            border: none; padding: 10px 20px; border-radius: 50px; font-size: 14px; font-weight: 600;
-            cursor: pointer; background: #f0f0f0; color: #666; margin: 5px; transition: 0.2s;
+            border: none; padding: 8px 16px; border-radius: 50px; font-size: 14px; font-weight: 600;
+            cursor: pointer; background: #f0f0f0; color: #666; margin: 4px; transition: 0.2s;
         }
         .btn.active { background: var(--primary); color: white; }
         .btn:active { transform: scale(0.95); }
@@ -89,31 +107,36 @@
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(251, 111, 146, 0.4);
         }
+        
         .section-header {
-            font-size: 13px; font-weight: bold; color: #333;
-            margin: 20px 0 10px 0; border-bottom: 1px solid #eee; padding-bottom: 5px; display: block;
+            font-size: 12px; font-weight: bold; color: #888; text-transform: uppercase;
+            margin: 15px 0 8px 0; letter-spacing: 1px; display: block;
         }
 
-        /* 顏色/貼圖捲軸 */
+        /* 顏色/貼圖捲軸 (V.7 縮小圖示) */
         .scroll-container {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px;
-            max-height: 120px; overflow-y: auto; padding: 2px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); gap: 6px;
+            padding: 2px;
         }
         .color-dot {
-            width: 38px; height: 38px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer;
+            width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ddd; cursor: pointer;
         }
         .sticker-item {
-            font-size: 24px; background: #f9f9f9; border: 1px solid #eee; border-radius: 8px;
-            height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+            font-size: 20px; background: #f9f9f9; border: 1px solid #eee; border-radius: 6px;
+            height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
 
-        /* 物件編輯面板 */
+        /* 物件編輯面板 (重點強調) */
         #object-controls {
-            background: #fff8e1; padding: 10px; border-radius: 12px; margin-bottom: 10px;
-            border: 1px solid #ffe082; display: none;
+            background: #fff8e1; padding: 12px; border-radius: 12px; 
+            border: 2px solid #ffe082; display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .ctrl-row { display: flex; align-items: center; margin-bottom: 5px; gap: 10px; font-size: 14px; }
-        input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; text-align: center; }
+        .ctrl-row { display: flex; align-items: center; margin-bottom: 8px; gap: 8px; font-size: 14px; font-weight: bold; }
+        input[type="text"] { 
+            flex: 1; padding: 8px; border: 2px solid #primary; border-radius: 6px; 
+            text-align: center; font-size: 16px; 
+        }
 
         @media print {
             body { background: white; height: auto; overflow: visible; }
@@ -127,7 +150,7 @@
 <body>
 
     <div id="setup-page" class="app-container">
-        <h1 style="color:#fb6f92; margin-bottom:20px;">📸 人生四格 V.6</h1>
+        <h1 style="color:#fb6f92; margin-bottom:20px;">📸 人生四格 V.7</h1>
         <div style="background:white; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); width:100%; max-width:400px;">
             <div class="section-header">1. 版型尺寸</div>
             <div style="display:flex; justify-content:center;">
@@ -154,46 +177,56 @@
 
     <div id="editor-page">
         <div class="editor-left">
-            <h3 style="margin:0 0 10px 0;">🎨 裝飾照片</h3>
             
-            <div id="object-controls">
-                <div id="text-edit-row" class="ctrl-row">
-                    <span>內容</span>
-                    <input type="text" id="edit-text-input" oninput="updateSelectedText(this.value)">
+            <div class="editor-top-fixed">
+                <h3 style="margin:0 0 10px 0; font-size:16px;">🎨 編輯台</h3>
+                
+                <div id="object-controls">
+                    <div style="color:#e65100; font-size:12px; margin-bottom:5px;">⚡ 正在編輯選取項目:</div>
+                    
+                    <div id="text-edit-row" class="ctrl-row">
+                        <span>📝</span>
+                        <input type="text" id="edit-text-input" placeholder="在此輸入文字" oninput="updateSelectedText(this.value)">
+                    </div>
+                    
+                    <div id="color-edit-row" class="ctrl-row">
+                        <span>🎨</span>
+                        <input type="color" id="edit-color-input" style="width:100%; height:30px;" oninput="updateSelectedColor(this.value)">
+                    </div>
+
+                    <button class="btn" style="background:#ffcdd2; color:#c62828; width:100%; font-size:12px; margin-top:5px;" onclick="deleteSelected()">🗑️ 刪除此項目</button>
                 </div>
-                <div id="color-edit-row" class="ctrl-row">
-                    <span>顏色</span>
-                    <input type="color" id="edit-color-input" oninput="updateSelectedColor(this.value)">
+
+                <div id="base-controls" style="display:flex; gap:5px;">
+                    <button class="btn" onclick="addTextObject()" style="flex:1; background:#fff3e0; color:#ef6c00; font-size:12px;">✍️ 加文字</button>
+                    <label class="btn" style="flex:1; background:#f3e5f5; color:#8e24aa; text-align:center; font-size:12px;">
+                        🖼️ 加圖片
+                        <input type="file" accept="image/*" onchange="uploadSticker(this)" style="display:none;">
+                    </label>
                 </div>
-                <button class="btn" style="background:#ffcdd2; color:#c62828; width:100%; font-size:12px; margin-top:5px;" onclick="deleteSelected()">🗑️ 刪除選取項目</button>
             </div>
 
-            <div class="section-header">🎨 純色背景</div>
-            <div class="scroll-container" id="solid-color-grid"></div>
-            
-            <div class="section-header">🌈 漸變背景</div>
-            <div class="scroll-container" id="grad-color-grid"></div>
+            <div class="editor-scroll-area">
+                
+                <div class="section-header">🎨 純色背景 (20色)</div>
+                <div class="scroll-container" id="solid-color-grid"></div>
+                
+                <div class="section-header">🌈 漸變背景 (20色)</div>
+                <div class="scroll-container" id="grad-color-grid"></div>
 
-            <label class="btn" style="width:100%; box-sizing:border-box; margin-top:10px; font-size:12px; background:#e3f2fd; color:#1565c0; text-align:center; display:block;">
-                📂 上傳背景圖
-                <input type="file" accept="image/*" onchange="uploadBg(this)" style="display:none;">
-            </label>
-
-            <div class="section-header">✨ 貼圖庫</div>
-            <div class="scroll-container" id="sticker-grid"></div>
-            
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <button class="btn" onclick="addTextObject()" style="flex:1; background:#fff3e0; color:#ef6c00;">✍️ 加文字</button>
-                <label class="btn" style="flex:1; background:#f3e5f5; color:#8e24aa; text-align:center;">
-                    🖼️ 加圖片
-                    <input type="file" accept="image/*" onchange="uploadSticker(this)" style="display:none;">
+                <label class="btn" style="width:100%; box-sizing:border-box; margin-top:10px; font-size:12px; background:#e3f2fd; color:#1565c0; text-align:center; display:block;">
+                    📂 上傳背景圖
+                    <input type="file" accept="image/*" onchange="uploadBg(this)" style="display:none;">
                 </label>
-            </div>
 
-            <div style="margin-top:20px;">
-                <button class="btn" style="width:100%; background:#333; color:white;" onclick="window.print()">🖨️ 列印</button>
-                <button class="btn-xl" style="margin-top:10px;" onclick="downloadImage()">⬇ 下載</button>
-                <button class="btn" style="width:100%; margin-top:10px; background:#eee;" onclick="location.reload()">🔄 重來</button>
+                <div class="section-header">✨ 貼圖庫</div>
+                <div class="scroll-container" id="sticker-grid"></div>
+
+                <div style="margin-top:30px; padding-bottom:20px;">
+                    <button class="btn" style="width:100%; background:#333; color:white;" onclick="window.print()">🖨️ 列印</button>
+                    <button class="btn-xl" style="margin-top:10px;" onclick="downloadImage()">⬇ 下載圖片</button>
+                    <button class="btn" style="width:100%; margin-top:10px; background:#eee;" onclick="location.reload()">🔄 全部重來</button>
+                </div>
             </div>
         </div>
 
@@ -203,7 +236,7 @@
     </div>
 
 <script>
-    // --- 素材庫 ---
+    // --- V.7 擴充素材庫 (20+ Each) ---
     const SOLID_COLORS = [
         '#ffffff', '#000000', '#ffebf0', '#e0f7fa', '#fff3cd', 
         '#f3e5f5', '#e8f5e9', '#ffe0b2', '#d7ccc8', '#cfd8dc',
@@ -212,13 +245,17 @@
     ];
     const GRADIENTS = [
         ['#ff9a9e', '#fecfef'], ['#a18cd1', '#fbc2eb'], ['#fad0c4', '#ffd1ff'], ['#ffecd2', '#fcb69f'],
-        ['#84fab0', '#8fd3f4'], ['#a1c4fd', '#c2e9fb'], ['#fccb90', '#d57eeb'], ['#e0c3fc', '#8ec5fc']
+        ['#84fab0', '#8fd3f4'], ['#a1c4fd', '#c2e9fb'], ['#fccb90', '#d57eeb'], ['#e0c3fc', '#8ec5fc'],
+        ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'], ['#43e97b', '#38f9d7'], ['#fa709a', '#fee140'],
+        ['#30cfd0', '#330867'], ['#5ee7df', '#b490ca'], ['#d299c2', '#fef9d7'], ['#fddb92', '#d1fdff'],
+        ['#9890e3', '#b1f4cf'], ['#ebc0fd', '#d9ded8'], ['#f6d365', '#fda085'], ['#a8edea', '#fed6e3']
     ];
     const EMOJIS = [
         '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', 
         '✨', '🌟', '💫', '🎀', '🧸', '🐶', '🐱', '🐰', 
         '🌸', '🌹', '🌻', '🌿', '🔥', '👑', '💎', '💍', 
-        '🎂', '🎉', '🎵', '👻', '🕶️', '🌈', '☁️', '🌙'
+        '🎂', '🎉', '🎵', '👻', '🕶️', '🌈', '☁️', '🌙',
+        '🐼', '🦄', '🦋', '🎈', '🎁', '🍭', '🍦', '🍕'
     ];
 
     // --- 變數 ---
@@ -240,14 +277,12 @@
 
     // --- 初始化 ---
     function init() {
-        // V.6: 純色與漸變分開
         const solidGrid = document.getElementById('solid-color-grid');
         const gradGrid = document.getElementById('grad-color-grid');
         
         SOLID_COLORS.forEach(c => createColorBtn(c, false, solidGrid));
         GRADIENTS.forEach(g => createColorBtn(g, true, gradGrid));
 
-        // 貼圖
         const stickerGrid = document.getElementById('sticker-grid');
         EMOJIS.forEach(e => {
             const div = document.createElement('div');
@@ -327,18 +362,14 @@
         document.getElementById('setup-page').style.display = 'none';
         document.getElementById('editor-page').style.display = 'flex';
         
-        // V.6: 精準計算預設文字位置 (底部中間)
         const pad=50, head=100, foot=400, photoH=600;
         const totalH = head + (photoH*4) + (pad*5) + foot;
         const totalW = (config.format==='2x6') ? (800+pad*2) : (800+pad*2)*2;
         
-        // 日期時間
-        const dateStr = new Date().toLocaleString();
+        const dateStr = new Date().toLocaleDateString();
 
         elements = [
-            // 標題 (LIFE4CUTS)
             { type:'text', content:'LIFE4CUTS', x:totalW/2, y:totalH - 280, size:80, rotation:0, color:'#333' },
-            // 日期 (Date)
             { type:'text', content:dateStr, x:totalW/2, y:totalH - 150, size:40, rotation:0, color:'#666' }
         ];
         renderCanvas();
@@ -394,20 +425,20 @@
                 ctx.drawImage(el.img, -w/2, -h/2, w, h);
             }
 
-            // 選取框 (V.6: 加大圓點與範圍)
+            // 選取框 (V.6: 加大圓點)
             if(i === selectedIdx) {
-                const handleR = 25; // 加大半徑
-                const handleDist = 60; // 手柄距離物件邊緣的距離
+                const handleR = 25; 
+                const handleDist = 60; 
 
                 ctx.strokeStyle = '#007bff'; ctx.lineWidth = 3;
                 ctx.strokeRect(-w/2-10, -h/2-10, w+20, h+20);
                 
-                // 旋轉手柄 (上方)
+                // 旋轉
                 ctx.beginPath(); ctx.arc(0, -h/2-handleDist, handleR, 0, Math.PI*2);
                 ctx.fillStyle='#fff'; ctx.fill(); ctx.stroke();
                 ctx.fillStyle='#007bff'; ctx.font='30px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('⟳', 0, -h/2-handleDist+2);
 
-                // 縮放手柄 (右下)
+                // 縮放
                 ctx.beginPath(); ctx.arc(w/2+10, h/2+10, handleR, 0, Math.PI*2);
                 ctx.fillStyle='#fff'; ctx.fill(); ctx.stroke();
                 ctx.fillStyle='#007bff'; ctx.font='24px Arial'; ctx.fillText('⤡', w/2+10, h/2+12);
@@ -449,12 +480,10 @@
             const lx = dx*Math.cos(rad) - dy*Math.sin(rad);
             const ly = dx*Math.sin(rad) + dy*Math.cos(rad);
             const w = el._w, h = el._h;
-            const handleDist = 60; // 配合繪圖的距離
-            const hitR = 50; // 加大點擊判定範圍
+            const handleDist = 60;
+            const hitR = 50; 
 
-            // 旋轉判定 (上方)
             if(Math.hypot(lx-0, ly-(-h/2-handleDist)) < hitR) { interactionMode='ROTATE'; return; }
-            // 縮放判定 (右下)
             if(Math.hypot(lx-(w/2+10), ly-(h/2+10)) < hitR) { 
                 interactionMode='SCALE'; dragStart={size:el.size, dist:Math.hypot(lx,ly)}; return; 
             }
@@ -501,8 +530,14 @@
     // --- 輔助 ---
     function updateUI() {
         const p = document.getElementById('object-controls');
-        if(selectedIdx===-1) { p.style.display='none'; return; }
+        if(selectedIdx===-1) { 
+            p.style.display='none'; 
+            document.getElementById('base-controls').style.display = 'flex';
+            return; 
+        }
         p.style.display='block';
+        document.getElementById('base-controls').style.display = 'none';
+
         const el = elements[selectedIdx];
         if(el.type==='text') {
             document.getElementById('text-edit-row').style.display='flex';
@@ -523,7 +558,7 @@
     
     function uploadBg(input) { if(input.files[0]) { const i=new Image(); i.onload=()=>{config.bgImg=i;config.bgType='image';renderCanvas();}; i.src=URL.createObjectURL(input.files[0]); } }
     function uploadSticker(input) { if(input.files[0]) { const i=new Image(); i.onload=()=>{addElement({type:'image', img:i, size:200});}; i.src=URL.createObjectURL(input.files[0]); } }
-    function downloadImage() { selectedIdx=-1; renderCanvas(); const l=document.createElement('a'); l.download=`life4cuts-v6-${Date.now()}.png`; l.href=canvas.toDataURL(); l.click(); }
+    function downloadImage() { selectedIdx=-1; renderCanvas(); const l=document.createElement('a'); l.download=`life4cuts-v7-${Date.now()}.png`; l.href=canvas.toDataURL(); l.click(); }
 </script>
 </body>
 </html>
