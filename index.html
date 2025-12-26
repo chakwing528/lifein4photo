@@ -3,371 +3,435 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的專屬人生四格 | My Life4Cuts</title>
+    <title>人生四格 Pro | My Life4Cuts</title>
     <style>
         /* --- 網站基本樣式 --- */
+        :root {
+            --primary-color: #ff7eb3;
+            --secondary-color: #8e44ad;
+            --bg-color: #f4f4f9;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
-            background-color: #f4f4f9;
+            background-color: var(--bg-color);
             color: #333;
             padding: 20px;
             margin: 0;
         }
-        h1 { color: #4a4a4a; margin-bottom: 10px; }
-        p.subtitle { color: #666; margin-bottom: 25px; }
-
-        /* --- 控制區與按鈕樣式 --- */
-        .controls-section {
+        h1 { margin-bottom: 5px; color: #444; }
+        
+        /* --- 控制面板 --- */
+        .panel {
             background: white;
             padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: inline-block;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            max-width: 800px;
+            margin: 10px auto;
+            text-align: center;
         }
-        .format-group { margin-bottom: 15px; }
-        .btn {
-            padding: 10px 24px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #e0e0e0;
-            color: #333;
-            border: 2px solid transparent;
-            border-radius: 25px;
-            margin: 5px;
-            transition: all 0.3s ease;
-        }
-        .btn:hover { background-color: #d0d0d0; transform: translateY(-2px); }
-        /* 選中狀態的按鈕 */
-        .btn.active {
-            background-color: #ff7eb3;
-            color: white;
-            box-shadow: 0 4px 10px rgba(255, 126, 179, 0.4);
-        }
-        .btn-primary {
-            background-color: #ff7eb3;
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
-            padding: 12px 30px;
-        }
-        .btn-primary:hover { background-color: #ff65a3; box-shadow: 0 4px 12px rgba(255, 101, 163, 0.5); }
 
-        /* --- 相機預覽區 --- */
-        #camera-container {
+        .btn {
+            padding: 10px 20px;
+            font-size: 15px;
+            cursor: pointer;
+            background-color: #eee;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            margin: 5px;
+            transition: 0.2s;
+        }
+        .btn:hover { filter: brightness(0.9); }
+        .btn.active { background-color: var(--primary-color); color: white; font-weight: bold; }
+        .btn-xl { font-size: 18px; padding: 12px 30px; background: var(--secondary-color); color: white; }
+        
+        /* --- 自訂背景與特效區 --- */
+        .custom-section { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 10px; }
+        .control-group { border: 1px solid #eee; padding: 10px; border-radius: 8px; }
+        .control-title { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        
+        input[type="color"] { cursor: pointer; height: 35px; width: 50px; border: none; padding: 0; }
+        input[type="file"] { font-size: 12px; }
+
+        /* --- 相機與預覽 --- */
+        #camera-wrapper {
             position: relative;
             display: inline-block;
             margin: 20px auto;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border: 4px solid #333;
+            border-radius: 8px;
             background: #000;
-        }
-        /* 鏡像翻轉視訊，讓自拍較自然 */
-        video { 
-            width: 100%; /* RWD 設定 */
-            max-width: 600px; 
-            height: auto; 
-            display: block;
-            transform: scaleX(-1); 
+            overflow: hidden;
         }
         
-        /* --- 倒數計時器 --- */
-        #countdown {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 100px;
-            color: white;
-            font-weight: 800;
-            text-shadow: 4px 4px 10px rgba(0,0,0,0.7);
-            display: none; /* 預設隱藏 */
-            pointer-events: none;
+        /* 關鍵修正：讓 Video 填滿容器，並利用 CSS 模擬「裁切後」的樣子 
+           這裡設定一個固定比例容器，讓使用者知道拍出來就是這個範圍
+        */
+        video {
+            display: block;
+            transform: scaleX(-1); /* 鏡像 */
+            /* 讓影片填滿容器，多餘的會被父層 overflow:hidden 切掉 (視覺預覽) */
+            object-fit: cover; 
+            width: 600px;
+            height: 450px; /* 4:3 比例 */
         }
 
-        /* --- 結果顯示區 --- */
-        #result-container {
-            display: none; /* 預設隱藏，拍完顯示 */
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px dashed #ccc;
+        #countdown {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 120px; color: white; font-weight: 900;
+            text-shadow: 0 0 20px rgba(0,0,0,0.8);
+            display: none; pointer-events: none; z-index: 10;
         }
-        /* 最終合成的 Canvas */
+
+        /* --- 結果展示 --- */
+        #result-area { display: none; margin-top: 20px; }
         canvas {
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            max-width: 90%; /* 在手機上不會超出螢幕 */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 90%;
             height: auto;
-            margin-bottom: 20px;
             border-radius: 4px;
         }
-        .action-buttons {
-            margin-top: 15px;
-        }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .btn-secondary:hover { background-color: #5a6268; }
 
-        /* --- 列印專用樣式 (重要!) --- */
-        /* 當使用者按下「列印」時，隱藏網頁所有元素，只顯示那張照片 */
+        /* 列印模式 */
         @media print {
             body * { visibility: hidden; }
-            #result-container, #result-container * { visibility: visible; }
-            #result-container {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-                border: none;
-                text-align: center;
-            }
-            /* 強制 Canvas 在列印時維持高品質並適應頁面 */
-            canvas {
-                max-width: 100%;
-                max-height: 100vh;
-                box-shadow: none;
-                width: auto; /* 讓瀏覽器決定最佳列印寬度 */
-            }
-            .action-buttons, h3 { display: none; } /* 列印時不顯示按鈕和標題 */
+            #result-area, #result-area canvas { visibility: visible; }
+            #result-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; }
+            canvas { width: 100%; max-height: 100vh; object-fit: contain; }
+            .no-print { display: none !important; }
         }
     </style>
 </head>
 <body>
 
-    <h1>📸 我的專屬人生四格</h1>
-    <p class="subtitle">選擇尺寸，準備好你的笑容！(需允許相機權限)</p>
-
-    <div class="controls-section">
-        <div class="format-group">
-            <p style="margin: 5px 0; font-weight: bold;">選擇列印尺寸：</p>
-            <button id="btn-2x6" class="btn active" onclick="setFormat('2x6')">2x6 英吋 (經典長條)</button>
-            <button id="btn-4x6" class="btn" onclick="setFormat('4x6')">4x6 英吋 (兩條並排)</button>
-        </div>
-        <div>
-            <button class="btn btn-primary" onclick="startCapture()">✨ 開始拍攝 (連拍4張) ✨</button>
+    <div class="no-print">
+        <h1>📸 人生四格 Pro</h1>
+        
+        <div class="panel">
+            <div class="control-group">
+                <span class="control-title">1. 選擇版型</span>
+                <button id="btn-2x6" class="btn active" onclick="setFormat('2x6')">2x6 (經典長條)</button>
+                <button id="btn-4x6" class="btn" onclick="setFormat('4x6')">4x6 (兩條並排)</button>
+            </div>
+            <br>
+            <button class="btn btn-xl" onclick="startCapture()">✨ 開始拍攝 (連拍4張) ✨</button>
         </div>
     </div>
 
-    <br>
-    <div id="camera-container">
+    <div id="camera-wrapper" class="no-print">
         <video id="video" autoplay playsinline></video>
         <div id="countdown"></div>
     </div>
 
-    <div id="result-container">
-        <h3>🎉 拍攝完成！預覽你的照片：</h3>
-        <canvas id="finalCanvas"></canvas>
-        
-        <div class="action-buttons">
-            <button class="btn btn-primary" onclick="downloadImage()">📥 下載圖片</button>
-            <button class="btn btn-secondary" onclick="window.print()">🖨️ 列印照片</button>
-            <button class="btn" onclick="resetBooth()">🔄 重新拍攝</button>
+    <div id="result-area">
+        <div class="panel no-print">
+            <h3>🎨 裝飾你的照片</h3>
+            <div class="custom-section">
+                <div class="control-group">
+                    <span class="control-title">更改背景</span>
+                    <button class="btn" onclick="setBgColor('#ffffff')">白</button>
+                    <button class="btn" onclick="setBgColor('#000000')">黑</button>
+                    <button class="btn" onclick="setBgColor('#ffebf0')">粉</button>
+                    <label style="cursor:pointer; display:inline-block; margin-left:5px;">
+                        🎨 自選色 <input type="color" id="color-picker" oninput="setBgColor(this.value)">
+                    </label>
+                    <div style="margin-top:5px;">
+                        <span style="font-size:12px;">🖼️ 上傳背景圖:</span>
+                        <input type="file" id="bg-upload" accept="image/*" onchange="uploadBackground(this)">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <span class="control-title">添加特效</span>
+                    <button class="btn" onclick="toggleEffect('none')">無</button>
+                    <button class="btn" onclick="toggleEffect('hearts')">❤️ 心心雨</button>
+                    <button class="btn" onclick="toggleEffect('stars')">✨ 閃亮亮</button>
+                    <button class="btn" onclick="toggleEffect('cats')">🐱 貓咪</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button class="btn btn-xl" onclick="downloadImage()">📥 下載圖片</button>
+                <button class="btn" onclick="window.print()">🖨️ 列印</button>
+                <button class="btn" onclick="location.reload()">🔄 重來</button>
+            </div>
         </div>
+
+        <canvas id="finalCanvas"></canvas>
     </div>
 
     <script>
-        // --- 變數宣告 ---
+        // --- 變數 ---
         const video = document.getElementById('video');
         const finalCanvas = document.getElementById('finalCanvas');
         const ctx = finalCanvas.getContext('2d');
         const countdownEl = document.getElementById('countdown');
-        const resultContainer = document.getElementById('result-container');
-        const btn2x6 = document.getElementById('btn-2x6');
-        const btn4x6 = document.getElementById('btn-4x6');
+        const resultArea = document.getElementById('result-area');
+        const cameraWrapper = document.getElementById('camera-wrapper');
 
-        let photos = []; // 儲存拍攝的 4 張照片 (canvas 元素)
-        let currentFormat = '2x6'; // 預設尺寸
+        let photos = []; // 存 4 張照片
+        let currentFormat = '2x6';
+        
+        // 狀態變數：用於後期製作
+        let currentBgType = 'color'; // 'color' or 'image'
+        let currentBgValue = '#ffebf0'; // 預設粉色背景
+        let customBgImage = null; // 儲存使用者上傳的背景圖物件
+        let currentEffect = 'none'; // 特效
 
-        // --- 1. 初始化：啟動相機 ---
-        // 請求 HD 解析度 (1280x720)，如果裝置不支援會自動降級
+        // --- 1. 相機啟動與設定 ---
+        // 我們設定相機預覽框的大小為 600x450 (4:3)
+        // 這會強制使用者看到的就是最終會被裁切的範圍
         navigator.mediaDevices.getUserMedia({ 
             video: { 
                 width: { ideal: 1280 }, 
                 height: { ideal: 720 },
-                facingMode: "user" // 優先使用前鏡頭
+                facingMode: "user" 
             } 
-        })
-        .then(stream => {
+        }).then(stream => {
             video.srcObject = stream;
-        })
-        .catch(err => {
-            console.error("相機錯誤:", err);
-            alert("無法開啟相機。請確保您已允許網站存取相機權限。\n(在 iOS 上請使用 Safari 瀏覽器)");
-        });
+        }).catch(err => alert("相機錯誤: " + err));
 
-        // --- 功能：切換尺寸 ---
-        function setFormat(format) {
-            currentFormat = format;
-            // 更新按鈕外觀
-            if (format === '2x6') {
-                btn2x6.classList.add('active');
-                btn4x6.classList.remove('active');
-            } else {
-                btn4x6.classList.add('active');
-                btn2x6.classList.remove('active');
-            }
-            console.log("目前尺寸設定為:", currentFormat);
+        // --- 2. 拍攝邏輯 ---
+        function setFormat(fmt) {
+            currentFormat = fmt;
+            document.getElementById('btn-2x6').className = fmt === '2x6' ? 'btn active' : 'btn';
+            document.getElementById('btn-4x6').className = fmt === '4x6' ? 'btn active' : 'btn';
+            if(photos.length === 4) renderFinalImage(); // 如果已經拍完，切換尺寸時直接重繪
         }
 
-        // --- 功能：開始拍攝流程 ---
         async function startCapture() {
-            photos = []; // 清空舊照片
-            resultContainer.style.display = 'none'; // 隱藏上次結果
-            // 滾動到相機位置
-            document.getElementById('camera-container').scrollIntoView({ behavior: 'smooth' });
+            photos = [];
+            resultArea.style.display = 'none';
+            cameraWrapper.scrollIntoView({ behavior: 'smooth' });
 
-            // 執行 4 次拍攝循環
             for (let i = 1; i <= 4; i++) {
-                await runCountdown(3); // 倒數 3 秒
-                capturePhoto(); // 拍照
-                // 閃光燈效果 (選用)
-                document.body.style.backgroundColor = 'white';
-                setTimeout(() => document.body.style.backgroundColor = '#f4f4f9', 100);
+                await runCountdown(3);
+                capturePhoto();
             }
-
-            mergePhotos(); // 4張拍完後，進行合併
+            // 拍完後第一次渲染
+            resultArea.style.display = 'block';
+            renderFinalImage();
+            location.href = "#result-area";
         }
 
-        // --- 輔助功能：倒數計時 ---
-        function runCountdown(seconds) {
+        function runCountdown(sec) {
             return new Promise(resolve => {
                 countdownEl.style.display = 'block';
-                let counter = seconds;
-                countdownEl.innerText = counter;
-                
-                const timer = setInterval(() => {
-                    counter--;
-                    if (counter > 0) {
-                        countdownEl.innerText = counter;
-                    } else {
+                let c = sec;
+                countdownEl.innerText = c;
+                let timer = setInterval(() => {
+                    c--;
+                    if(c > 0) countdownEl.innerText = c;
+                    else {
                         clearInterval(timer);
                         countdownEl.style.display = 'none';
-                        resolve(); // 倒數結束，Promise 完成
+                        resolve();
                     }
                 }, 1000);
             });
         }
 
-        // --- 功能：擷取單張照片 ---
+        // --- 關鍵修正：智慧裁切拍照 ---
         function capturePhoto() {
-            // 建立一個暫時的 canvas 來抓取視訊當下的影格
             const tempCanvas = document.createElement('canvas');
-            // 確保抓取到的解析度與視訊源一致
-            tempCanvas.width = video.videoWidth;
-            tempCanvas.height = video.videoHeight;
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            // **關鍵：處理鏡像翻轉**
-            // 因為預覽畫面為了自然通常是鏡像的，我們希望存下來的照片也是鏡像的
-            tempCtx.translate(tempCanvas.width, 0);
-            tempCtx.scale(-1, 1);
-            
-            // 將視訊畫面畫到暫存 canvas 上
-            tempCtx.drawImage(video, 0, 0);
-            photos.push(tempCanvas); // 存入陣列
-            console.log("已拍攝照片:", photos.length);
-        }
+            // 我們希望照片最終是 4:3 比例 (例如 800x600)
+            const targetW = 800;
+            const targetH = 600;
+            tempCanvas.width = targetW;
+            tempCanvas.height = targetH;
+            const tCtx = tempCanvas.getContext('2d');
 
-        // --- 核心功能：合併照片 (繪製人生四格) ---
-        function mergePhotos() {
-            // 設定參數 (以 300 DPI 為標準，確保列印清晰)
-            const photoWidth = 560;  // 單張照片寬度
-            const photoHeight = 420; // 單張照片高度 (4:3 比例)
-            const paddingX = 20; // 水平邊距
-            const paddingY = 20; // 垂直間距
-            const headerHeight = 60; // 頂部留白
-            const footerHeight = 100; // 底部留白 (放文字用)
+            // 鏡像處理
+            tCtx.translate(targetW, 0);
+            tCtx.scale(-1, 1);
+
+            // 計算裁切參數 (模仿 object-fit: cover)
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+            const videoRatio = vw / vh;
+            const targetRatio = targetW / targetH;
             
-            // 計算單一條(2x6)的總高度
-            const singleStripHeight = headerHeight + (photoHeight * 4) + (paddingY * 5) + footerHeight;
-            // 計算單一條(2x6)的總寬度
-            const singleStripWidth = photoWidth + (paddingX * 2);
+            let sx, sy, sw, sh;
 
-            let finalWidth, finalHeight;
-
-            if (currentFormat === '2x6') {
-                // --- 2x6 模式：單條垂直 ---
-                finalWidth = singleStripWidth;
-                finalHeight = singleStripHeight;
+            if (videoRatio > targetRatio) {
+                // 視訊比較寬 -> 裁掉左右
+                sh = vh;
+                sw = vh * targetRatio;
+                sy = 0;
+                sx = (vw - sw) / 2; // 取中間
             } else {
-                // --- 4x6 模式：兩條並排 ---
-                finalWidth = singleStripWidth * 2; // 寬度加倍
-                finalHeight = singleStripHeight;   // 高度不變
+                // 視訊比較高 -> 裁掉上下
+                sw = vw;
+                sh = vw / targetRatio;
+                sx = 0;
+                sy = (vh - sh) / 2;
             }
 
-            // 設定最終 Canvas 尺寸
-            finalCanvas.width = finalWidth;
-            finalCanvas.height = finalHeight;
+            // drawImage(source, sx, sy, sw, sh, dx, dy, dw, dh)
+            // 只抓取視訊中間的部分，畫滿整個 canvas
+            tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, targetW, targetH);
+            
+            photos.push(tempCanvas);
+            
+            // 閃光效果
+            document.body.style.backgroundColor = 'white';
+            setTimeout(() => document.body.style.backgroundColor = '', 100);
+        }
 
-            // 1. 填滿背景色 (可以自己改顏色碼，例如淺粉紅 #ffe4e1)
-            ctx.fillStyle = "#ffffff"; 
-            ctx.fillRect(0, 0, finalWidth, finalHeight);
+        // --- 3. 後期製作功能 (背景 & 特效) ---
 
-            // 2. 定義繪製單條照片的函數
-            function drawStrip(startX) {
-                photos.forEach((photoCanvas, index) => {
-                    // 計算每張照片的 Y 座標
-                    const y = headerHeight + paddingY + (index * (photoHeight + paddingY));
-                    const x = startX + paddingX;
+        function setBgColor(color) {
+            currentBgType = 'color';
+            currentBgValue = color;
+            if(photos.length === 4) renderFinalImage();
+        }
 
-                    // 繪製照片邊框陰影 (選用，增加立體感)
-                    ctx.fillStyle = "rgba(0,0,0,0.05)";
-                    ctx.fillRect(x + 5, y + 5, photoWidth, photoHeight);
+        function uploadBackground(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        customBgImage = img;
+                        currentBgType = 'image';
+                        if(photos.length === 4) renderFinalImage();
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
 
-                    // 繪製照片 (會自動縮放以適應框框)
-                    // drawImage(來源, x, y, 寬, 高)
-                    ctx.drawImage(photoCanvas, x, y, photoWidth, photoHeight);
+        function toggleEffect(effectName) {
+            currentEffect = effectName;
+            if(photos.length === 4) renderFinalImage();
+        }
+
+        // --- 4. 最終渲染 (核心繪圖邏輯) ---
+        // 這個函數現在可以被重複呼叫 (換背景、換特效時)
+        function renderFinalImage() {
+            // 參數設定 (基礎單位)
+            const photoW = 800;
+            const photoH = 600; 
+            const padding = 50;
+            const headerH = 100;
+            const footerH = 250;
+            
+            // 計算畫布尺寸
+            const stripW = photoW + (padding * 2);
+            const stripH = headerH + (photoH * 4) + (padding * 5) + footerH;
+
+            let finalW, finalH;
+            if (currentFormat === '2x6') {
+                finalW = stripW;
+                finalH = stripH;
+            } else {
+                finalW = stripW * 2;
+                finalH = stripH;
+            }
+
+            finalCanvas.width = finalW;
+            finalCanvas.height = finalH;
+
+            // --- A. 繪製背景 ---
+            if (currentBgType === 'color') {
+                ctx.fillStyle = currentBgValue;
+                ctx.fillRect(0, 0, finalW, finalH);
+            } else if (currentBgType === 'image' && customBgImage) {
+                // 背景圖模式 (類似 cover 填滿)
+                drawCoverImage(ctx, customBgImage, finalW, finalH);
+            }
+
+            // --- B. 繪製照片條 ---
+            function drawOneStrip(offsetX) {
+                // 畫每張照片
+                photos.forEach((p, i) => {
+                    const x = offsetX + padding;
+                    const y = headerH + padding + (i * (photoH + padding));
+                    
+                    // 照片白邊/陰影
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(x - 10, y - 10, photoW + 20, photoH + 20);
+                    
+                    // 畫照片
+                    ctx.drawImage(p, x, y, photoW, photoH);
+
+                    // --- C. 繪製特效 (針對每張照片) ---
+                    drawEffects(x, y, photoW, photoH);
                 });
 
-                // 繪製底部文字
-                ctx.fillStyle = "#555";
-                ctx.font = "bold 24px Arial";
+                // 底部文字
+                ctx.fillStyle = "#333";
+                // 如果背景是深色，文字改白色
+                if(currentBgValue === '#000000') ctx.fillStyle = "#fff";
+                
+                ctx.font = "bold 60px Arial";
                 ctx.textAlign = "center";
-                ctx.fillText("MY LIFE4CUTS", startX + (singleStripWidth / 2), finalHeight - 55);
-                ctx.font = "18px Arial";
-                ctx.fillText(new Date().toLocaleDateString(), startX + (singleStripWidth / 2), finalHeight - 25);
+                ctx.fillText("LIFE4CUTS", offsetX + stripW/2, finalH - 120);
+                
+                ctx.font = "30px Arial";
+                ctx.fillText(new Date().toLocaleDateString(), offsetX + stripW/2, finalH - 60);
             }
 
-            // 3. 開始繪製
             if (currentFormat === '2x6') {
-                drawStrip(0); // 畫一條，起始 X 為 0
+                drawOneStrip(0);
             } else {
-                // 4x6 模式：畫兩次
-                drawStrip(0); // 左邊那條
-                drawStrip(singleStripWidth); // 右邊那條 (起始 X 往右移)
-
-                // 畫中間的裁切虛線
+                drawOneStrip(0);
+                drawOneStrip(stripW);
+                // 中間虛線
                 ctx.beginPath();
-                ctx.setLineDash([15, 15]); // 虛線樣式
-                ctx.moveTo(singleStripWidth, 0);
-                ctx.lineTo(singleStripWidth, finalHeight);
-                ctx.strokeStyle = '#d0d0d0';
-                ctx.lineWidth = 2;
+                ctx.setLineDash([20, 20]);
+                ctx.moveTo(stripW, 0);
+                ctx.lineTo(stripW, finalH);
+                ctx.strokeStyle = "#ccc";
+                ctx.lineWidth = 4;
                 ctx.stroke();
             }
-
-            // 顯示結果區域
-            resultContainer.style.display = 'block';
-            // 平滑滾動到結果區
-            resultContainer.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- 功能：下載圖片 ---
+        // 輔助：繪製特效
+        function drawEffects(x, y, w, h) {
+            if (currentEffect === 'hearts') {
+                ctx.font = "80px Arial";
+                ctx.fillText("❤️", x + 40, y + 80); // 左上
+                ctx.fillText("❤️", x + w - 40, y + h - 40); // 右下
+            } else if (currentEffect === 'stars') {
+                ctx.font = "80px Arial";
+                ctx.fillText("✨", x + 20, y + 60);
+                ctx.fillText("✨", x + w - 50, y + 60);
+            } else if (currentEffect === 'cats') {
+                ctx.font = "80px Arial";
+                ctx.fillText("🐱", x + 10, y + h - 20);
+            }
+        }
+
+        // 輔助：背景圖填滿 (Object-fit: cover 演算法)
+        function drawCoverImage(ctx, img, w, h) {
+            const imgRatio = img.width / img.height;
+            const canvasRatio = w / h;
+            let sx, sy, sw, sh;
+            
+            if (imgRatio > canvasRatio) {
+                sh = img.height;
+                sw = img.height * canvasRatio;
+                sy = 0;
+                sx = (img.width - sw) / 2;
+            } else {
+                sw = img.width;
+                sh = img.width / canvasRatio;
+                sx = 0;
+                sy = (img.height - sh) / 2;
+            }
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+        }
+
         function downloadImage() {
             const link = document.createElement('a');
-            // 設定下載的檔名，包含時間戳記
-            link.download = `life4cuts-${currentFormat}-${Date.now()}.png`;
-            // 將 Canvas 轉為圖片 URL
-            link.href = finalCanvas.toDataURL('image/png', 1.0); // 使用最高品質
+            link.download = `life4cuts-${Date.now()}.png`;
+            link.href = finalCanvas.toDataURL('image/png');
             link.click();
-        }
-
-        // --- 功能：重新拍攝 ---
-        function resetBooth() {
-            resultContainer.style.display = 'none';
-            document.getElementById('camera-container').scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
