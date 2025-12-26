@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>📸 人生四格 V.7</title>
+    <title>📸 人生四格 V.8</title>
     <style>
-        /* --- 🎨 V.7 樣式 --- */
+        /* --- 🎨 V.8 樣式 --- */
         :root {
             --primary: #ff8fab;
             --primary-dark: #fb6f92;
@@ -19,7 +19,7 @@
             color: #444; margin: 0; padding: 0;
             height: 100vh; overscroll-behavior: none; 
             user-select: none; -webkit-user-select: none;
-            overflow: hidden; /* 防止頁面滾動 */
+            overflow: hidden;
         }
 
         /* --- 全螢幕拍攝 --- */
@@ -39,7 +39,7 @@
             text-shadow: 0 5px 20px rgba(0,0,0,0.8); display: none;
         }
 
-        /* --- 版面配置 (Layout) --- */
+        /* --- 版面配置 --- */
         .app-container { display: flex; flex-direction: column; height: 100vh; }
         
         #setup-page {
@@ -49,32 +49,17 @@
 
         #editor-page { display: none; height: 100%; width: 100%; }
 
-        /* 左側面板結構 (V.7 修正溢出問題) */
         .editor-left {
-            display: flex; flex-direction: column; /* 垂直排列 */
-            background: white; z-index: 10;
+            display: flex; flex-direction: column; background: white; z-index: 10;
             box-shadow: 5px 0 15px rgba(0,0,0,0.05);
         }
 
-        /* 頂部固定區 (編輯控制項) */
-        .editor-top-fixed {
-            flex-shrink: 0; padding: 15px; border-bottom: 1px solid #eee;
-            background: #fff;
-        }
-
-        /* 底部捲動區 (素材庫) */
-        .editor-scroll-area {
-            flex: 1; overflow-y: auto; padding: 15px;
-            /* 隱藏捲軸但保留功能 */
-            scrollbar-width: thin;
-        }
+        .editor-top-fixed { flex-shrink: 0; padding: 15px; border-bottom: 1px solid #eee; background: #fff; }
+        .editor-scroll-area { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; }
 
         @media (min-width: 768px) {
             #editor-page { flex-direction: row; }
-            .editor-left {
-                width: var(--panel-width); height: 100%; 
-                border-right: 1px solid #eee;
-            }
+            .editor-left { width: var(--panel-width); height: 100%; border-right: 1px solid #eee; }
             .editor-right {
                 flex: 1; height: 100%; background: #eee;
                 display: flex; align-items: center; justify-content: center;
@@ -85,9 +70,7 @@
 
         @media (max-width: 767px) {
             #editor-page { flex-direction: column-reverse; }
-            .editor-left {
-                width: 100%; height: 50%; border-top: 1px solid #eee;
-            }
+            .editor-left { width: 100%; height: 50%; border-top: 1px solid #eee; }
             .editor-right {
                 width: 100%; height: 50%; background: #f4f4f4;
                 display: flex; align-items: center; justify-content: center; padding: 10px;
@@ -110,32 +93,47 @@
         
         .section-header {
             font-size: 12px; font-weight: bold; color: #888; text-transform: uppercase;
-            margin: 15px 0 8px 0; letter-spacing: 1px; display: block;
+            margin: 20px 0 8px 0; letter-spacing: 1px; display: block;
         }
 
-        /* 顏色/貼圖捲軸 (V.7 縮小圖示) */
+        /* 顏色/貼圖捲軸 */
         .scroll-container {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); gap: 6px;
             padding: 2px;
         }
-        .color-dot {
-            width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ddd; cursor: pointer;
-        }
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ddd; cursor: pointer; }
         .sticker-item {
             font-size: 20px; background: #f9f9f9; border: 1px solid #eee; border-radius: 6px;
             height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
 
-        /* 物件編輯面板 (重點強調) */
+        /* 物件編輯面板 */
         #object-controls {
             background: #fff8e1; padding: 12px; border-radius: 12px; 
             border: 2px solid #ffe082; display: none;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         .ctrl-row { display: flex; align-items: center; margin-bottom: 8px; gap: 8px; font-size: 14px; font-weight: bold; }
-        input[type="text"] { 
-            flex: 1; padding: 8px; border: 2px solid #primary; border-radius: 6px; 
-            text-align: center; font-size: 16px; 
+        input[type="text"] { flex: 1; padding: 8px; border: 2px solid #primary; border-radius: 6px; text-align: center; font-size: 16px; }
+
+        /* V.8 新增：照片管理區 */
+        .photo-manager {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px;
+        }
+        .photo-thumb-box {
+            position: relative; aspect-ratio: 4/3; border-radius: 6px; overflow: hidden; 
+            border: 2px solid #eee; cursor: pointer;
+        }
+        .photo-thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        .retake-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.5); color: white;
+            display: flex; align-items: center; justify-content: center; font-size: 10px;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .photo-thumb-box:hover .retake-overlay { opacity: 1; }
+        .photo-number {
+            position: absolute; bottom: 2px; left: 4px; color: white; font-weight: bold; 
+            font-size: 10px; text-shadow: 0 1px 2px black;
         }
 
         @media print {
@@ -150,7 +148,7 @@
 <body>
 
     <div id="setup-page" class="app-container">
-        <h1 style="color:#fb6f92; margin-bottom:20px;">📸 人生四格 V.7</h1>
+        <h1 style="color:#fb6f92; margin-bottom:20px;">📸 人生四格 V.8</h1>
         <div style="background:white; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); width:100%; max-width:400px;">
             <div class="section-header">1. 版型尺寸</div>
             <div style="display:flex; justify-content:center;">
@@ -163,7 +161,7 @@
                 <button class="btn active" onclick="setTimer(5, this)">5秒</button>
                 <button class="btn" onclick="setTimer(10, this)">10秒</button>
             </div>
-            <button class="btn-xl" onclick="startCamera()">🚀 全螢幕拍攝</button>
+            <button class="btn-xl" onclick="startFullSession()">🚀 全螢幕拍攝</button>
         </div>
     </div>
 
@@ -172,29 +170,25 @@
             <video id="video" autoplay playsinline muted></video>
             <div id="countdown"></div>
         </div>
-        <div style="color:white; margin-top:20px;">請看鏡頭... 📸</div>
+        <div id="camera-msg" style="color:white; margin-top:20px;">請看鏡頭... 📸</div>
     </div>
 
     <div id="editor-page">
         <div class="editor-left">
-            
             <div class="editor-top-fixed">
                 <h3 style="margin:0 0 10px 0; font-size:16px;">🎨 編輯台</h3>
                 
                 <div id="object-controls">
-                    <div style="color:#e65100; font-size:12px; margin-bottom:5px;">⚡ 正在編輯選取項目:</div>
-                    
+                    <div style="color:#e65100; font-size:12px; margin-bottom:5px;">⚡ 編輯選取項目:</div>
                     <div id="text-edit-row" class="ctrl-row">
                         <span>📝</span>
-                        <input type="text" id="edit-text-input" placeholder="在此輸入文字" oninput="updateSelectedText(this.value)">
+                        <input type="text" id="edit-text-input" placeholder="輸入文字" oninput="updateSelectedText(this.value)">
                     </div>
-                    
                     <div id="color-edit-row" class="ctrl-row">
                         <span>🎨</span>
                         <input type="color" id="edit-color-input" style="width:100%; height:30px;" oninput="updateSelectedColor(this.value)">
                     </div>
-
-                    <button class="btn" style="background:#ffcdd2; color:#c62828; width:100%; font-size:12px; margin-top:5px;" onclick="deleteSelected()">🗑️ 刪除此項目</button>
+                    <button class="btn" style="background:#ffcdd2; color:#c62828; width:100%; font-size:12px; margin-top:5px;" onclick="deleteSelected()">🗑️ 刪除</button>
                 </div>
 
                 <div id="base-controls" style="display:flex; gap:5px;">
@@ -208,10 +202,14 @@
 
             <div class="editor-scroll-area">
                 
-                <div class="section-header">🎨 純色背景 (20色)</div>
+                <div class="section-header">📸 照片管理 (點擊重拍)</div>
+                <div class="photo-manager" id="photo-manager-grid">
+                    </div>
+
+                <div class="section-header">🎨 純色背景</div>
                 <div class="scroll-container" id="solid-color-grid"></div>
                 
-                <div class="section-header">🌈 漸變背景 (20色)</div>
+                <div class="section-header">🌈 漸變背景</div>
                 <div class="scroll-container" id="grad-color-grid"></div>
 
                 <label class="btn" style="width:100%; box-sizing:border-box; margin-top:10px; font-size:12px; background:#e3f2fd; color:#1565c0; text-align:center; display:block;">
@@ -219,8 +217,8 @@
                     <input type="file" accept="image/*" onchange="uploadBg(this)" style="display:none;">
                 </label>
 
-                <div class="section-header">✨ 貼圖庫</div>
-                <div class="scroll-container" id="sticker-grid"></div>
+                <div class="section-header">✨ 貼圖庫 (100+)</div>
+                <div class="scroll-container" id="sticker-grid" style="max-height:200px;"></div>
 
                 <div style="margin-top:30px; padding-bottom:20px;">
                     <button class="btn" style="width:100%; background:#333; color:white;" onclick="window.print()">🖨️ 列印</button>
@@ -236,7 +234,7 @@
     </div>
 
 <script>
-    // --- V.7 擴充素材庫 (20+ Each) ---
+    // --- V.8 素材庫 (100+ Emojis) ---
     const SOLID_COLORS = [
         '#ffffff', '#000000', '#ffebf0', '#e0f7fa', '#fff3cd', 
         '#f3e5f5', '#e8f5e9', '#ffe0b2', '#d7ccc8', '#cfd8dc',
@@ -251,20 +249,29 @@
         ['#9890e3', '#b1f4cf'], ['#ebc0fd', '#d9ded8'], ['#f6d365', '#fda085'], ['#a8edea', '#fed6e3']
     ];
     const EMOJIS = [
-        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', 
-        '✨', '🌟', '💫', '🎀', '🧸', '🐶', '🐱', '🐰', 
-        '🌸', '🌹', '🌻', '🌿', '🔥', '👑', '💎', '💍', 
-        '🎂', '🎉', '🎵', '👻', '🕶️', '🌈', '☁️', '🌙',
-        '🐼', '🦄', '🦋', '🎈', '🎁', '🍭', '🍦', '🍕'
+        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔',
+        '✨', '🌟', '💫', '💥', '💢', '💦', '💨', '💫', '🎀', '🎁',
+        '🧸', '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨',
+        '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤',
+        '🦄', '🦋', '🐝', '🐞', '🐌', '🐢', '🦕', '🦖', '🐙', '🐬',
+        '🌸', '🌹', '🌺', '🌻', '🌼', '🌷', '🌱', '🌿', '🍀', '🍁',
+        '🔥', '💧', '☀️', '☁️', '🌈', '❄️', '🌙', '⭐', '⚡', '☂️',
+        '👑', '💎', '💍', '💄', '👓', '🕶️', '🎓', '🧢', '🎒', '👟',
+        '🎂', '🍰', '🧁', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🍕',
+        '🍔', '🍟', '🌭', '🥪', '🌮', '🍙', '🍣', '🍱', '🍦', '🍉',
+        '🎵', '🎶', '🎤', '🎧', '🎸', '🎹', '📷', '📸', '📹', '💡',
+        '👻', '👽', '🤖', '💩', '💀', '🤡', '👹', '👺', '💋', '💯'
     ];
 
     // --- 變數 ---
     let stream = null;
-    let photos = [];
+    let photos = []; // 存 Canvas 物件
     let config = { format: '2x6', timer: 5, bg: '#ffebf0', bgType: 'color', bgImg: null };
     let elements = [];
     let selectedIdx = -1;
-    
+    let retakeIndex = -1; // 用於標記正在重拍哪一張
+
+    // 互動狀態
     let interactionMode = 'NONE';
     let dragStart = {x:0, y:0};
     let initialPinchDist = 0;
@@ -279,7 +286,6 @@
     function init() {
         const solidGrid = document.getElementById('solid-color-grid');
         const gradGrid = document.getElementById('grad-color-grid');
-        
         SOLID_COLORS.forEach(c => createColorBtn(c, false, solidGrid));
         GRADIENTS.forEach(g => createColorBtn(g, true, gradGrid));
 
@@ -312,35 +318,63 @@
     }
     init();
 
-    // --- 相機 ---
+    // --- 相機控制 (支援完整拍攝與單張重拍) ---
     function setFormat(f) { config.format = f; document.querySelectorAll('#setup-page .btn').forEach(b=>b.classList.remove('active')); document.getElementById('btn-'+f).classList.add('active'); }
     function setTimer(t, btn) { config.timer = t; btn.parentNode.querySelectorAll('.btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
-    async function startCamera() {
+    async function startCameraStream() {
         try {
             stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: {ideal:1280}, height: {ideal:720} }, audio: false });
             video.srcObject = stream;
             document.getElementById('camera-modal').style.display = 'flex';
-            setTimeout(startShooting, 1000);
         } catch(e) { alert('無法開啟相機'); }
     }
 
-    async function startShooting() {
+    // 1. 完整拍攝 (4張)
+    async function startFullSession() {
         photos = [];
+        await startCameraStream();
+        document.getElementById('camera-msg').innerText = "準備開始連拍 4 張...";
+        await wait(1000);
+
         const cnt = document.getElementById('countdown');
         for(let i=0; i<4; i++) {
+            document.getElementById('camera-msg').innerText = `第 ${i+1} / 4 張`;
             cnt.style.display = 'block';
             for(let t=config.timer; t>0; t--) { cnt.innerText=t; await wait(1000); }
             cnt.style.display = 'none';
             flash();
-            snapPhoto();
+            snapPhoto(i); // 傳入索引 (如果是 push 模式則忽略)
             await wait(1000);
         }
         stopCamera();
         enterEditor();
     }
+
+    // 2. 單張重拍
+    async function startRetake(index) {
+        retakeIndex = index;
+        await startCameraStream();
+        document.getElementById('camera-msg').innerText = `重拍第 ${index+1} 張`;
+        
+        // 倒數 3 秒 (重拍不用太久)
+        const cnt = document.getElementById('countdown');
+        cnt.style.display = 'block';
+        for(let t=3; t>0; t--) { cnt.innerText=t; await wait(1000); }
+        cnt.style.display = 'none';
+        
+        flash();
+        snapPhoto(index); // 替換指定索引
+        await wait(500);
+        
+        stopCamera();
+        // 更新畫面
+        renderCanvas();
+        renderPhotoManager();
+        retakeIndex = -1;
+    }
     
-    function snapPhoto() {
+    function snapPhoto(insertIndex) {
         const c = document.createElement('canvas'); c.width=800; c.height=600;
         const cx = c.getContext('2d');
         cx.translate(800,0); cx.scale(-1,1);
@@ -350,7 +384,14 @@
         if(vRatio > rRatio) { sh=vh; sw=vh*rRatio; sy=0; sx=(vw-sw)/2; }
         else { sw=vw; sh=vw/rRatio; sx=0; sy=(vh-sh)/2; }
         cx.drawImage(video, sx, sy, sw, sh, 0, 0, 800, 600);
-        photos.push(c);
+        
+        if (retakeIndex !== -1) {
+            // 重拍模式：替換
+            photos[retakeIndex] = c;
+        } else {
+            // 連拍模式：新增
+            photos.push(c);
+        }
     }
 
     function stopCamera() { if(stream) stream.getTracks().forEach(t=>t.stop()); document.getElementById('camera-modal').style.display='none'; }
@@ -362,17 +403,49 @@
         document.getElementById('setup-page').style.display = 'none';
         document.getElementById('editor-page').style.display = 'flex';
         
+        // 初始化照片管理面板
+        renderPhotoManager();
+
+        // 初始化預設文字
         const pad=50, head=100, foot=400, photoH=600;
         const totalH = head + (photoH*4) + (pad*5) + foot;
         const totalW = (config.format==='2x6') ? (800+pad*2) : (800+pad*2)*2;
-        
         const dateStr = new Date().toLocaleDateString();
 
-        elements = [
-            { type:'text', content:'LIFE4CUTS', x:totalW/2, y:totalH - 280, size:80, rotation:0, color:'#333' },
-            { type:'text', content:dateStr, x:totalW/2, y:totalH - 150, size:40, rotation:0, color:'#666' }
-        ];
+        if (elements.length === 0) {
+            elements = [
+                { type:'text', content:'LIFE4CUTS', x:totalW/2, y:totalH - 280, size:80, rotation:0, color:'#333' },
+                { type:'text', content:dateStr, x:totalW/2, y:totalH - 150, size:40, rotation:0, color:'#666' }
+            ];
+        }
         renderCanvas();
+    }
+
+    // V.8: 渲染縮圖列表
+    function renderPhotoManager() {
+        const grid = document.getElementById('photo-manager-grid');
+        grid.innerHTML = '';
+        photos.forEach((canvas, idx) => {
+            const box = document.createElement('div');
+            box.className = 'photo-thumb-box';
+            box.onclick = () => startRetake(idx); // 綁定重拍事件
+            
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL();
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'retake-overlay';
+            overlay.innerText = '點擊重拍';
+
+            const num = document.createElement('div');
+            num.className = 'photo-number';
+            num.innerText = `#${idx+1}`;
+
+            box.appendChild(img);
+            box.appendChild(overlay);
+            box.appendChild(num);
+            grid.appendChild(box);
+        });
     }
 
     // --- 繪圖核心 ---
@@ -383,7 +456,6 @@
         const finalH=colH;
         canvas.width = finalW; canvas.height = finalH;
 
-        // 背景
         if(config.bgType==='image' && config.bgImg) {
             const img=config.bgImg; const iR=img.width/img.height, cR=finalW/finalH;
             let sx,sy,sw,sh;
@@ -394,7 +466,6 @@
             ctx.fillStyle=grd; ctx.fillRect(0,0,finalW,finalH);
         } else { ctx.fillStyle=config.bg; ctx.fillRect(0,0,finalW,finalH); }
 
-        // 照片
         const drawCol = (ox) => {
             photos.forEach((p,i)=>{
                 const x=ox+pad, y=head+pad+i*(pH+pad);
@@ -405,13 +476,11 @@
         drawCol(0);
         if(config.format==='4x6') { drawCol(colW); ctx.beginPath(); ctx.setLineDash([20,20]); ctx.moveTo(colW,0); ctx.lineTo(colW,finalH); ctx.strokeStyle='rgba(0,0,0,0.1)'; ctx.lineWidth=4; ctx.stroke(); }
 
-        // 物件
         ctx.setLineDash([]);
         elements.forEach((el, i) => {
             ctx.save();
             ctx.translate(el.x, el.y);
             ctx.rotate(el.rotation * Math.PI/180);
-            
             let w, h;
             if(el.type==='text') {
                 ctx.font=`bold ${el.size}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -425,20 +494,15 @@
                 ctx.drawImage(el.img, -w/2, -h/2, w, h);
             }
 
-            // 選取框 (V.6: 加大圓點)
             if(i === selectedIdx) {
-                const handleR = 25; 
-                const handleDist = 60; 
-
+                const handleR = 25; const handleDist = 60; 
                 ctx.strokeStyle = '#007bff'; ctx.lineWidth = 3;
                 ctx.strokeRect(-w/2-10, -h/2-10, w+20, h+20);
                 
-                // 旋轉
                 ctx.beginPath(); ctx.arc(0, -h/2-handleDist, handleR, 0, Math.PI*2);
                 ctx.fillStyle='#fff'; ctx.fill(); ctx.stroke();
                 ctx.fillStyle='#007bff'; ctx.font='30px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('⟳', 0, -h/2-handleDist+2);
 
-                // 縮放
                 ctx.beginPath(); ctx.arc(w/2+10, h/2+10, handleR, 0, Math.PI*2);
                 ctx.fillStyle='#fff'; ctx.fill(); ctx.stroke();
                 ctx.fillStyle='#007bff'; ctx.font='24px Arial'; ctx.fillText('⤡', w/2+10, h/2+12);
@@ -463,16 +527,10 @@
 
     function onPointerDown(e) {
         e.preventDefault();
-        
         if(e.touches && e.touches.length === 2 && selectedIdx !== -1) {
-            interactionMode = 'PINCH';
-            initialPinchDist = getPinchDist(e);
-            initialScale = elements[selectedIdx].size;
-            return;
+            interactionMode = 'PINCH'; initialPinchDist = getPinchDist(e); initialScale = elements[selectedIdx].size; return;
         }
-
         const p = getPointerPos(e);
-        
         if(selectedIdx !== -1) {
             const el = elements[selectedIdx];
             const dx = p.x - el.x; const dy = p.y - el.y;
@@ -480,13 +538,10 @@
             const lx = dx*Math.cos(rad) - dy*Math.sin(rad);
             const ly = dx*Math.sin(rad) + dy*Math.cos(rad);
             const w = el._w, h = el._h;
-            const handleDist = 60;
-            const hitR = 50; 
+            const handleDist = 60, hitR = 50; 
 
             if(Math.hypot(lx-0, ly-(-h/2-handleDist)) < hitR) { interactionMode='ROTATE'; return; }
-            if(Math.hypot(lx-(w/2+10), ly-(h/2+10)) < hitR) { 
-                interactionMode='SCALE'; dragStart={size:el.size, dist:Math.hypot(lx,ly)}; return; 
-            }
+            if(Math.hypot(lx-(w/2+10), ly-(h/2+10)) < hitR) { interactionMode='SCALE'; dragStart={size:el.size, dist:Math.hypot(lx,ly)}; return; }
         }
 
         let hit = -1;
@@ -504,25 +559,15 @@
     function onPointerMove(e) {
         if(interactionMode === 'NONE') return;
         e.preventDefault();
-
         if(interactionMode === 'PINCH' && e.touches && e.touches.length === 2) {
-            const s = getPinchDist(e) / initialPinchDist;
-            elements[selectedIdx].size = initialScale * s; renderCanvas(); return;
+            const s = getPinchDist(e) / initialPinchDist; elements[selectedIdx].size = initialScale * s; renderCanvas(); return;
         }
-
         const p = getPointerPos(e);
         const el = elements[selectedIdx];
 
-        if(interactionMode === 'DRAG') {
-            el.x += (p.x - dragStart.x); el.y += (p.y - dragStart.y);
-            dragStart = {x:p.x, y:p.y};
-        } else if(interactionMode === 'ROTATE') {
-            const angle = Math.atan2(p.y-el.y, p.x-el.x) * 180 / Math.PI;
-            el.rotation = angle + 90;
-        } else if(interactionMode === 'SCALE') {
-            const dist = Math.hypot(p.x-el.x, p.y-el.y);
-            el.size = dragStart.size * (dist / dragStart.dist);
-        }
+        if(interactionMode === 'DRAG') { el.x += (p.x - dragStart.x); el.y += (p.y - dragStart.y); dragStart = {x:p.x, y:p.y}; } 
+        else if(interactionMode === 'ROTATE') { const angle = Math.atan2(p.y-el.y, p.x-el.x) * 180 / Math.PI; el.rotation = angle + 90; } 
+        else if(interactionMode === 'SCALE') { const dist = Math.hypot(p.x-el.x, p.y-el.y); el.size = dragStart.size * (dist / dragStart.dist); }
         renderCanvas();
     }
     function onPointerUp() { interactionMode = 'NONE'; }
@@ -530,14 +575,9 @@
     // --- 輔助 ---
     function updateUI() {
         const p = document.getElementById('object-controls');
-        if(selectedIdx===-1) { 
-            p.style.display='none'; 
-            document.getElementById('base-controls').style.display = 'flex';
-            return; 
-        }
-        p.style.display='block';
-        document.getElementById('base-controls').style.display = 'none';
-
+        const base = document.getElementById('base-controls');
+        if(selectedIdx===-1) { p.style.display='none'; base.style.display='flex'; return; }
+        p.style.display='block'; base.style.display='none';
         const el = elements[selectedIdx];
         if(el.type==='text') {
             document.getElementById('text-edit-row').style.display='flex';
@@ -552,13 +592,11 @@
     function updateSelectedText(v) { if(selectedIdx!==-1){elements[selectedIdx].content=v; renderCanvas();}}
     function updateSelectedColor(v) { if(selectedIdx!==-1){elements[selectedIdx].color=v; renderCanvas();}}
     function deleteSelected() { if(selectedIdx!==-1){elements.splice(selectedIdx,1); selectedIdx=-1; updateUI(); renderCanvas();}}
-
     function addTextObject() { addElement({type:'text', content:'請輸入文字', size:60, color:'#000000'}); }
     function addElement(props) { elements.push({x:canvas.width/2, y:canvas.height/2, rotation:0, ...props}); selectedIdx=elements.length-1; updateUI(); renderCanvas(); }
-    
     function uploadBg(input) { if(input.files[0]) { const i=new Image(); i.onload=()=>{config.bgImg=i;config.bgType='image';renderCanvas();}; i.src=URL.createObjectURL(input.files[0]); } }
     function uploadSticker(input) { if(input.files[0]) { const i=new Image(); i.onload=()=>{addElement({type:'image', img:i, size:200});}; i.src=URL.createObjectURL(input.files[0]); } }
-    function downloadImage() { selectedIdx=-1; renderCanvas(); const l=document.createElement('a'); l.download=`life4cuts-v7-${Date.now()}.png`; l.href=canvas.toDataURL(); l.click(); }
+    function downloadImage() { selectedIdx=-1; renderCanvas(); const l=document.createElement('a'); l.download=`life4cuts-v8-${Date.now()}.png`; l.href=canvas.toDataURL(); l.click(); }
 </script>
 </body>
 </html>
